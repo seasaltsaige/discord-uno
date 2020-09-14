@@ -12,6 +12,14 @@
     "discord-uno",
     "discorduno"
   ],
+  "homepage": "https://github.com/Maxisthemoose/discord-uno",
   "author": "Maxisthemoose",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "@types/node": "^14.10.1",
+    "discord.js": "^12.3.1"
+  }
 }
