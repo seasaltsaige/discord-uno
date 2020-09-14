@@ -1,0 +1,17 @@
+{
+  "name": "discord-uno",
+  "version": "1.0.0",
+  "description": "Create and handle an advanced version of UNO! In your very own JavaScript Discord Bot!",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "UNO!",
+    "uno",
+    "discord-uno",
+    "discorduno"
+  ],
+  "author": "Maxisthemoose",
+  "license": "ISC"
+}
