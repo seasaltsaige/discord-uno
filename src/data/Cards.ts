@@ -14,7 +14,6 @@ export const cards = {
         color: 'red',
         value: 1,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_1.png'
         },
@@ -23,7 +22,6 @@ export const cards = {
         color: 'red',
         value: 2,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_2.png'
         },
@@ -32,7 +30,6 @@ export const cards = {
         color: 'red',
         value: 3,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_3.png'
         },
@@ -41,7 +38,6 @@ export const cards = {
         color: 'red',
         value: 4,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_4.png'
         },
@@ -50,7 +46,6 @@ export const cards = {
         color: 'red',
         value: 5,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_5.png'
         },
@@ -59,7 +54,6 @@ export const cards = {
         color: 'red',
         value: 6,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_6.png'
         },
@@ -76,7 +70,6 @@ export const cards = {
         color: 'red',
         value: 8,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_8.png'
         }, 
@@ -85,7 +78,6 @@ export const cards = {
         color: 'red',
         value: 9,
         count: 2,
-        ability: null,
         inPlay: 0,
         image: './src/assets/UNOcards/red/Red_9.png'
         },
@@ -129,7 +121,7 @@ export const cards = {
             color: 'yellow',
             value: 1,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_1.png'
         },
@@ -138,7 +130,7 @@ export const cards = {
             color: 'yellow',
             value: 2,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_2.png'
         },
@@ -147,7 +139,7 @@ export const cards = {
             color: 'yellow',
             value: 3,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_3.png'
         },
@@ -156,7 +148,7 @@ export const cards = {
             color: 'yellow',
             value: 4,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_4.png'
         },
@@ -165,7 +157,7 @@ export const cards = {
             color: 'yellow',
             value: 5,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_5.png'
         },
@@ -174,7 +166,7 @@ export const cards = {
             color: 'yellow',
             value: 6,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_6.png'
         },
@@ -191,7 +183,7 @@ export const cards = {
             color: 'yellow',
             value: 8,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_8.png'
         }, 
@@ -200,7 +192,7 @@ export const cards = {
             color: 'yellow',
             value: 9,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/yellow/Yellow_9.png'
         },
@@ -244,7 +236,7 @@ export const cards = {
             color: 'green',
             value: 1,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_1.png'
         },
@@ -253,7 +245,7 @@ export const cards = {
             color: 'green',
             value: 2,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_2.png'
         },
@@ -262,7 +254,7 @@ export const cards = {
             color: 'green',
             value: 3,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_3.png'
         },
@@ -271,7 +263,7 @@ export const cards = {
             color: 'green',
             value: 4,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_4.png'
         },
@@ -280,7 +272,7 @@ export const cards = {
             color: 'green',
             value: 5,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_5.png'
         },
@@ -289,7 +281,7 @@ export const cards = {
             color: 'green',
             value: 6,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_6.png'
         },
@@ -306,7 +298,7 @@ export const cards = {
             color: 'green',
             value: 8,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_8.png'
         }, 
@@ -315,7 +307,7 @@ export const cards = {
             color: 'green',
             value: 9,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/green/Green_9.png'
         },
@@ -360,7 +352,7 @@ export const cards = {
             color: 'blue',
             value: 1,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_1.png'
         },
@@ -369,7 +361,7 @@ export const cards = {
             color: 'blue',
             value: 2,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_2.png'
         },
@@ -378,7 +370,7 @@ export const cards = {
             color: 'blue',
             value: 3,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_3.png'
         },
@@ -387,7 +379,7 @@ export const cards = {
             color: 'blue',
             value: 4,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_4.png'
         },
@@ -396,7 +388,7 @@ export const cards = {
             color: 'blue',
             value: 5,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_5.png'
         },
@@ -405,7 +397,7 @@ export const cards = {
             color: 'blue',
             value: 6,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_6.png'
         },
@@ -422,7 +414,7 @@ export const cards = {
             color: 'blue',
             value: 8,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_8.png'
         }, 
@@ -431,7 +423,7 @@ export const cards = {
             color: 'blue',
             value: 9,
             count: 2,
-            ability: null,
+            
             inPlay: 0,
             image: './src/assets/UNOcards/blue/Blue_9.png'
         },
