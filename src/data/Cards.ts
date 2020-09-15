@@ -456,7 +456,7 @@ export const cards = {
     wild: [
         {
             name: 'Wild',
-            color: null,
+            color: "null",
             value: 'Wild',
             count: 4,
             inPlay: 0,
@@ -464,7 +464,7 @@ export const cards = {
         },
         {
             name: 'Wild Draw Four',
-            color: null,
+            color: "null",
             value: 'Wild Draw Four',
             count: 4,
             inPlay: 0,

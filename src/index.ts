@@ -129,9 +129,38 @@ export default class DiscordUNO {
             .setFooter(`Current Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
             .setColor("RED");
         return message.channel.send(embed);
+    }
+
+    public playCard(message: Message, card: string): Promise<Message> {
+
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("There is no game to play a card in! Try making a new game instead.");
+        const settings = this.settings.get(message.channel.id);
+
+        const user = foundGame.users[foundGame.currentPlayer];
+
+        if (!card) return message.channel.send("Please provide a valid card.");
+
+        const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
+
+        let jumpedIn = false;
+
+        if (settings.jumpIns) {
+            if (cardObject.name === foundGame.topCard.name && user.id !== message.author.id) {
+                jumpedIn = true;
+                foundGame.currentPlayer = foundGame.users.findIndex(user => user.id === message.author.id);
+            } else return message.channel.send("It isn't your turn yet!");
+        } else if (user.id !== message.author.id) return message.channel.send("Jump in's are disabled in this game, and it isn't your turn yet!");
+        
+        this.doSpecialCardAbility(cardObject, foundGame);
+
+        return message.channel.send("");
+    }
+
+    private doSpecialCardAbility(card: Card, data: GameData) {
 
     }
-    
+
     private returnCards (cards: Card[]): void {
         for (const card of cards) {
             let userdCard;
@@ -226,8 +255,13 @@ export default class DiscordUNO {
     
         return cardHand;
     }
-    private nextTurn(player: number, players: any[], type: "skip" | "normal") {
-        
+    private nextTurn(player: number, type: "skip" | "normal", settings: Settings, storage: GameData): number {
+        switch (type) {
+            case "normal":
+                return (settings.reverse ? player - 1 < 0 ? storage.users.length - 1 : player - 1 : player + 1 >= storage.users.length ? 0 : player + 1);
+            case "skip":
+                return (storage.users.length == 2 ? player : settings.reverse ? (player - 1) < 0 ? storage.users.length - 1 : player - 1 : (player + 1) > storage.users.length - 1 ? 0 : player + 1); 
+        };
     }
 }
 
