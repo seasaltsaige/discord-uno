@@ -4,7 +4,7 @@ import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
 import Settings from "./data/interfaces/Settings.interface";
 
-export default class DiscordUNO {
+export class DiscordUNO {
     constructor(
         public client: Client, 
         private storage = new Collection<Snowflake, GameData>(), 
@@ -265,4 +265,4 @@ export default class DiscordUNO {
     }
 }
 
-// module.exports = DiscordUNO;
+module.exports.DiscordUNO = DiscordUNO;

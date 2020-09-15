@@ -2,9 +2,10 @@
   "name": "discord-uno",
   "version": "1.0.0",
   "description": "Create and handle an advanced version of UNO! In your very own JavaScript Discord Bot!",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "test": "test"
+    "build": "tsc -p ."
   },
   "keywords": [
     "UNO!",
@@ -12,6 +13,16 @@
     "discord-uno",
     "discorduno"
   ],
+  "exports": {
+    ".": [
+      {
+        "require": "./lib/index.js",
+        "import": "./esm/index.mjs"
+      },
+      "./lib/index.js"
+    ],
+    "./esm": "./esm/index.mjs"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Maxisthemoose/discord-uno.git"
