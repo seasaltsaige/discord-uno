@@ -28,12 +28,7 @@ export class DiscordUNO {
             currentPlayer: 1,
         });
 
-        const embed = new MessageEmbed()
-            .setAuthor("An UNO! Game Was Created!", message.author.displayAvatarURL({ format: "png" }))
-            .setColor("RED")
-            .setDescription(`${message.author} created an UNO! game! You can now join the game!`)
-            .setFooter("Waiting for more users...", (<ClientUser>this.client.user).displayAvatarURL({ format: "png" }))
-        return message.channel.send(embed);
+        return message.channel.send(`${message.author} created an UNO! game! You can now join the game!`);
 
     };
 
@@ -60,12 +55,8 @@ export class DiscordUNO {
                 const userHand = user.hand;
                 (<User>this.client.users.cache.get(user.id)).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
             };
-            const embed = new MessageEmbed()
-                .setAuthor("UNO! Game", <string>(<Guild>message.guild).iconURL({ format: "png" }))
-                .setDescription(`Top Card: ${foundGame.topCard.name}`)
-                .setFooter(`Current Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
-                .setColor("RED");
-            return message.channel.send(embed);
+
+            return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
         }
 
         this.storage.set(message.channel.id, foundGame);
@@ -123,12 +114,8 @@ export class DiscordUNO {
             const userHand = user.hand;
             (<User>this.client.users.cache.get(user.id)).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
         };
-        const embed = new MessageEmbed()
-            .setAuthor("UNO! Game", <string>(<Guild>message.guild).iconURL({ format: "png" }))
-            .setDescription(`Top Card: ${foundGame.topCard.name}`)
-            .setFooter(`Current Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
-            .setColor("RED");
-        return message.channel.send(embed);
+
+        return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
     }
 
     public playCard(message: Message, card: string): Promise<Message> {
