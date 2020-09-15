@@ -5,7 +5,6 @@ export default interface GameData {
     guild: Snowflake;
     channel: Snowflake;
     creator: Snowflake;
-    waiting: boolean;
     active: boolean;
     users: {
         id: Snowflake;

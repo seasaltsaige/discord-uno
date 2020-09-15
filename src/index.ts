@@ -16,7 +16,6 @@ export default class DiscordUNO {
             guild: (<Guild>message.guild).id,
             channel: message.channel.id,
             creator: message.author.id,
-            waiting: true, 
             active: false,
             users: [{
                 id: message.author.id,
@@ -91,9 +90,23 @@ export default class DiscordUNO {
     }
 
     public startGame(message: Message): Promise<Message> {
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("There is no game going on in this channel to start. Try creating one instead.");
 
+        if (foundGame.creator !== message.author.id) return message.channel.send("Only the creator of the game can force start the game.");
+        if (foundGame.users.length < 2) return message.channel.send("Please wait for at least 2 players before trying to start the game.");
+        if (foundGame.active) return message.channel.send("You can't start an already active game.");
 
-        return message.channel.send("a");
+        foundGame.active = true;
+        this.storage.set(message.channel.id, foundGame);
+
+        for (const user of foundGame.users) {
+
+        };
+        const embed = new MessageEmbed()
+            .setAuthor("UNO! Game", <string>(<Guild>message.guild).iconURL({ format: "png" }))
+        return message.channel.send(embed);
+
     }
     
     private returnCards (cards: Card[]): void {
@@ -191,3 +204,5 @@ export default class DiscordUNO {
         return cardHand;
     }
 }
+
+module.exports = DiscordUNO;
