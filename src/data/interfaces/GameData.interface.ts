@@ -12,4 +12,5 @@ export default interface GameData {
         safe: boolean;
     }[];
     topCard: Card;
+    currentPlayer: number;
 }

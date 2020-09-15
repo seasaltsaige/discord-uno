@@ -2,12 +2,14 @@ import { Client, ClientUser, Collection, Guild, Message, MessageEmbed, MessageRe
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
+import Settings from "./data/interfaces/Settings.interface";
 
 export default class DiscordUNO {
     constructor(
         public client: Client, 
         private storage = new Collection<Snowflake, GameData>(), 
         private gameCards = gameCardsArray,
+        private settings = new Collection<Snowflake, Settings>()
     ) { };
     
     public async createGame(message: Message): Promise<Message> {
@@ -22,7 +24,8 @@ export default class DiscordUNO {
                 hand: await this.createCards(7, false),
                 safe: false,
             }],
-            topCard: (await this.createCards(1, true))[0]
+            topCard: (await this.createCards(1, true))[0],
+            currentPlayer: 1,
         });
 
         const embed = new MessageEmbed()
@@ -49,6 +52,22 @@ export default class DiscordUNO {
             safe: false,
         });
         
+        if (foundGame.users.length === 10) {
+            foundGame.active = true;
+            this.storage.set(message.channel.id, foundGame);
+    
+            for (const user of foundGame.users) {
+                const userHand = user.hand;
+                (<User>this.client.users.cache.get(user.id)).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+            };
+            const embed = new MessageEmbed()
+                .setAuthor("UNO! Game", <string>(<Guild>message.guild).iconURL({ format: "png" }))
+                .setDescription(`Top Card: ${foundGame.topCard.name}`)
+                .setFooter(`Current Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
+                .setColor("RED");
+            return message.channel.send(embed);
+        }
+
         this.storage.set(message.channel.id, foundGame);
             
         return message.channel.send(`${message.author} joined ${message.channel}'s UNO! game!`);
@@ -101,10 +120,14 @@ export default class DiscordUNO {
         this.storage.set(message.channel.id, foundGame);
 
         for (const user of foundGame.users) {
-
+            const userHand = user.hand;
+            (<User>this.client.users.cache.get(user.id)).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
         };
         const embed = new MessageEmbed()
             .setAuthor("UNO! Game", <string>(<Guild>message.guild).iconURL({ format: "png" }))
+            .setDescription(`Top Card: ${foundGame.topCard.name}`)
+            .setFooter(`Current Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
+            .setColor("RED");
         return message.channel.send(embed);
 
     }
@@ -203,6 +226,9 @@ export default class DiscordUNO {
     
         return cardHand;
     }
+    private nextTurn(player: number, players: any[], type: "skip" | "normal") {
+        
+    }
 }
 
-module.exports = DiscordUNO;
+// module.exports = DiscordUNO;
