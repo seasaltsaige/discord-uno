@@ -33,11 +33,11 @@ client.login("token");
 ```
 
 # Documentation
-## `createGame(message: Message)`
+### `createGame(message: Message)`
 
 To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
 
-## `addUser(message: Message)`
+### `addUser(message: Message)`
 
 To add users to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel.
 
