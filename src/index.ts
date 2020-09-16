@@ -13,6 +13,16 @@ export class DiscordUNO {
     ) { };
     
     public async createGame(message: Message): Promise<Message> {
+        if (!this.settings.get(message.guild.id)) {
+            this.settings.set(message.guild.id, {
+                jumpIns: false,
+                reverse: false,
+                seven: false,
+                stacking: false,
+                wildChallenge: false,
+                zero: false,
+            });
+        }
         if (this.storage.get(message.channel.id)) return message.channel.send("There is already a game going on in this channel. Please join that one instead or create a new game in another channel.");
         this.storage.set(message.channel.id, {
             guild: (<Guild>message.guild).id,
@@ -139,13 +149,40 @@ export class DiscordUNO {
             } else return message.channel.send("It isn't your turn yet!");
         } else if (user.id !== message.author.id) return message.channel.send("Jump in's are disabled in this game, and it isn't your turn yet!");
         
-        this.doSpecialCardAbility(cardObject, foundGame);
+        const special = this.doSpecialCardAbility(cardObject, foundGame);
+
+        if (special) {
+
+        } else {
+
+            const lastPlayer = foundGame.currentPlayer;
+            foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame);
+
+
+            this.storage.set(message.channel.id, foundGame);
+
+            return message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
+        }
 
         return message.channel.send("");
     }
 
-    private doSpecialCardAbility(card: Card, data: GameData) {
+    public viewTable(message: Message): Promise<Message> {
+        return message.channel.send("lol");
+    }
 
+    private doSpecialCardAbility(card: Card, data: GameData): boolean {
+
+        switch (card.name) {
+            case "Wild Draw Four":
+
+            break;
+            case "":
+
+            break;
+        };
+
+        return false;
     }
 
     private returnCards (cards: Card[]): void {

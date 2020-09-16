@@ -5,12 +5,17 @@ Discord-UNO is meant to be an easy to use, fast, and efficient way to create and
 npm install discord-uno
 ```
 ## Getting Started
+Make sure you have installed the latest stable version of [Node.js](https://nodejs.org/en/)
 ```js
 const Discord = require("discord.js");
-const DiscordUNO = require("discord-uno");
+const { DiscordUNO } = require("discord-uno");
 const client = new Discord.Client();
+let discordUNO;
 
-const discordUNO = new DiscordUNO(client);
+client.on("ready", () => {
+    discordUNO = new DiscordUNO(client);
+    console.log("Ready!");
+});
 
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!creategame") {
@@ -22,3 +27,18 @@ client.login("token");
 ```
 
 # Documentation
+```js
+createGame(message: Message): Promise<Message> // Handles the creation of the game and returns a message to let users know.
+
+addUser(message: Message): Promise<Message> // Handles the addition of a new user and returns a message. If the game reaches 10 users, it will automatically start.
+
+removeUser(message: Message): Promise<Message> // Handles the removal of a user and returns a message.
+
+startGame(message: Message): Promise<Message> // Handles the starting of a game, DM's the users their cards and initializes the game state.
+
+playCard(message: Message): Promise<Message> // Handles the playing of a card and returns a message dependent on if the card was special or not.
+
+viewCards(message: Message): Promise<Message> // Allows a user to view their own cards.
+
+viewTable(message: Message): Promise<Message> // Views the current state of the game, all users and their hand count, rotation, and whos turn it is.
+```
