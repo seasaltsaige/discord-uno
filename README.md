@@ -37,26 +37,55 @@ client.login("token");
 To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
 ```js
 client.on("message", async message => {
-    if (message.content.toLowerCase() === "!creategame") {
+    if (message.content.toLowerCase() === "!creategame")
         await discordUNO.createGame(message);
-    }
 });
 ```
-___
 ### addUser(message: Message): Promise\<Message\>
 To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
-___
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!join")
+        await discordUNO.addUser(message);
+});
+```
 ### removeUser(message: Message): Promise\<Message\>
 To remove a user from the game, call the removeUser() method. This method accepts one parameter, whcih is the Message object. This method will handle removing users from the game and returning their cards to the "deck".
-___
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!leave")
+        await discordUNO.removeUser(message);
+});
+```
 ### startGame(message: Message): Promise\<Message\>
 Place Holder Text
-___
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!startgame")
+        await discordUNO.startGame(message);
+});
+```
 ### playCard(message: Message): Promise\<Message\>
 Place Holder Text
-___
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!play")
+        await discordUNO.playCard(message);
+});
+```
 ### viewCards(message: Message): Promise\<Message\>
 Place Holder Text
-___
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!cards")
+        await discordUNO.viewCards(message);
+});
+```
 ### viewTable(message: Message): Promise\<Message\>
-Place Holder Text 
+Place Holder Text
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!table")
+        await discordUNO.viewTable(message);
+});
+```
