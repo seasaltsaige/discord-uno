@@ -65,6 +65,22 @@ client.on("message", async message => {
         await discordUNO.startGame(message);
 });
 ```
+### endGame(message: Message): Promise\<Message\>
+To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!endgame")
+        await discordUNO.endGame(message);
+});
+```
+### closeGame(message: Message): Promise\<Message\>
+Place Holder Text
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!closegame")
+        await discordUNO.closeGame(message);
+});
+```
 ### playCard(message: Message): Promise\<Message\>
 To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
 ```js

@@ -144,17 +144,19 @@ export class DiscordUNO {
     /**
      * To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
      */
-    public playCard(message: Message): Promise<Message> {
+    public async playCard(message: Message): Promise<Message> {
 
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to play a card in! Try making a new game instead.");
-        const settings = this.settings.get(message.channel.id);
+        const settings = this.settings.get(message.guild.id);
 
         const user = foundGame.users[foundGame.currentPlayer];
         const card = message.content.split(" ").slice(1).join(" ");
         if (!card) return message.channel.send("Please provide a valid card.");
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
+
+        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
 
         let jumpedIn = false;
 
@@ -165,7 +167,7 @@ export class DiscordUNO {
             } else return message.channel.send("It isn't your turn yet!");
         } else if (user.id !== message.author.id) return message.channel.send("Jump in's are disabled in this game, and it isn't your turn yet!");
         
-        const special = this.doSpecialCardAbility(cardObject, foundGame);
+        const special = await this.doSpecialCardAbility(message, cardObject, foundGame);
 
         if (special) {
 
@@ -176,7 +178,7 @@ export class DiscordUNO {
 
 
             this.storage.set(message.channel.id, foundGame);
-
+            
             return message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
         }
 
@@ -189,16 +191,136 @@ export class DiscordUNO {
         return message.channel.send("lol");
     }
 
-    private doSpecialCardAbility(card: Card, data: GameData): boolean {
+    public endGame(message: Message): Promise<Message> {
+        return message.channel.send("nice");
+    }
 
-        switch (card.name) {
-            case "Wild Draw Four":
+    public closeGame(message: Message): Promise<Message> {
+        return message.channel.send("Yeet");
+    }
 
-            break;
-            case "":
+    private async doSpecialCardAbility(message: Message, card: Card, data: GameData): Promise<boolean> {
 
-            break;
-        };
+        const settings = this.settings.get(message.guild.id);
+
+        if (card.name.toLowerCase() === "wild draw four") {
+
+            let color: "green" | "red" | "blue" | "yellow";
+            const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`);
+    
+            const filter = (reaction: MessageReaction, user: User) => ["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && user.id === message.author.id;
+            await Promise.all([msg.react("🔴"), msg.react("🟢"), msg.react("🔵"), msg.react("🟡"), ])
+
+            
+            const collected = await msg.awaitReactions(filter, { max: 1, time: 30000 });
+            const reaction = collected.first();
+            if (reaction !== undefined) {
+                if (reaction.emoji.name === '🟢') {
+                    color = 'green'
+                } else if (reaction.emoji.name === '🔴') {
+                    color = 'red'
+                } else if (reaction.emoji.name === '🔵') {
+                    color = 'blue'
+                } else if (reaction.emoji.name === '🟡') {
+                    color = 'yellow'
+                }
+            }
+
+            const colors = { 1: "green", 2: "red", 3: "blue", 4: "yellow" };
+            if (!color) {
+                const math = <1 | 2 | 3 | 4>(Math.floor(Math.random() * 4) + 1);
+                color = <"green" | "red" | "blue" | "yellow">(colors[math]);
+            } 
+
+            const nextUser = this.nextTurn(data.currentPlayer, "normal", settings, data);
+
+            const user = this.client.users.cache.get(data.users[nextUser].id)
+
+            let challenge = false;
+            if (settings.wildChallenge) {
+
+                let msg = await message.channel.send(`${message.author.tag} has played a Wild Draw Four, ${user}, would you like to challenge this? If they had another card they could have played, they draw 6 instead, otherwise, you draw 6. If you decide not to challenge, you draw the normal 4 cards`)
+                await Promise.all([msg.react("✅"), msg.react("❌")]);
+
+                const f = (reaction: MessageReaction, user: User) => ["✅", "❌"].includes(reaction.emoji.name) && user.id === user.id;
+
+
+
+                let collected2 = await msg.awaitReactions(f, { max: 1, time: 30000 });
+                if (collected2.size > 0) {
+                    const reaction2 = collected2.first();
+                    switch (reaction2.emoji.name) {
+                        case "✅":
+                            challenge = true;
+                        break;
+                        case "❌":
+                            challenge = false;
+                        break;
+                        default: challenge = false;
+                        break;
+                    }
+                }
+
+                const challenged = message.author;
+                const challenger = user;
+
+                let challengeWIN;
+                if (challenge) {
+                    if (data.users.find(user => user.id === challenged.id).hand.find(crd => crd.value === data.topCard.value) || data.users.find(user => user.id === challenged.id).hand.find(crd => crd.color === data.topCard.color)) {
+                        challengeWIN = true;
+                        let newCards = await this.createCards(6, false);
+                        newCards.forEach(c => {
+                            data.users.find(user => user.id === challenged.id).hand.push(c);
+                        });
+
+                        challenged.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "))
+
+                    } else {
+                        challengeWIN = false;
+                        let newCards = await this.createCards(6, false);
+                        newCards.forEach(c => {
+                            data.users.find(user => user.id === challenger.id).hand.push(c);
+                        });
+
+                        challenger.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "))
+                    }
+                } else {
+                    challengeWIN = null;
+                    let newCards = await this.createCards(4, false);
+                    newCards.forEach(c => {
+                        data.users[nextUser].hand.push(c);
+                    });
+
+                    const userToSend =  this.client.users.cache.get(data.users[nextUser].id)
+                    userToSend.send(data.users[nextUser].hand.map(c => c.name).join(" - "));    
+                }
+
+            } else {
+
+
+                let newCards = await this.createCards(4, false);
+                newCards.forEach(c => {
+                    data.users[nextUser].hand.push(c);
+                });
+    
+                const userToSend = this.client.users.cache.get(data.users[nextUser].id)
+                userToSend.send(data.users[nextUser].hand.map(c => c.name).join(" - "));
+    
+            }
+
+        } else if (card.name.toLowerCase() === "wild") {
+
+        } else if (card.name.toLowerCase().includes("reverse")) {
+            
+        } else if (card.name.toLowerCase().includes("skip")) {
+
+        } else if (card.name.toLowerCase().includes("zero")) {
+
+        } else if (card.name.toLowerCase().includes("seven")) {
+
+        } else if (card.name.toLowerCase().includes("draw two")) {
+
+        }
 
         return false;
     }
