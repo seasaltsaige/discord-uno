@@ -34,27 +34,24 @@ client.login("token");
 
 # Documentation
 ### `createGame(message: Message)`
-
+___
 To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
 
 ### `addUser(message: Message)`
-
-To add users to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel.
-
-
-
-```js
-createGame(message: Message): Promise<Message> // Handles the creation of the game and returns a message to let users know.
-
-addUser(message: Message): Promise<Message> // Handles the addition of a new user and returns a message. If the game reaches 10 users, it will automatically start.
-
-removeUser(message: Message): Promise<Message> // Handles the removal of a user and returns a message.
-
-startGame(message: Message): Promise<Message> // Handles the starting of a game, DM's the users their cards and initializes the game state.
-
-playCard(message: Message): Promise<Message> // Handles the playing of a card and returns a message dependent on if the card was special or not.
-
-viewCards(message: Message): Promise<Message> // Allows a user to view their own cards.
-
-viewTable(message: Message): Promise<Message> // Views the current state of the game, all users and their hand count, rotation, and whos turn it is.
-```
+___
+To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
+### `removeUser(message: Message)`
+___
+To remove a user from the game, call the removeUser() method. This method accepts one parameter, whcih is the Message object. This method will handle removing users from the game and returning their cards to the "deck".
+### `startGame(message: Message)`
+___
+Place Holder Text
+### `playCard(message: Message)`
+___
+Place Holder Text
+### `viewCards(message: Message`
+___
+Place Holder Text
+### `viewTable(message: Message)`
+___
+Place Holder Text 
