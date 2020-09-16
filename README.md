@@ -34,24 +34,22 @@ client.login("token");
 
 # Documentation
 ### `createGame(message: Message)`
-___
 To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
-
+___
 ### `addUser(message: Message)`
-___
 To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
+___
 ### `removeUser(message: Message)`
-___
 To remove a user from the game, call the removeUser() method. This method accepts one parameter, whcih is the Message object. This method will handle removing users from the game and returning their cards to the "deck".
+___
 ### `startGame(message: Message)`
-___
 Place Holder Text
+___
 ### `playCard(message: Message)`
-___
 Place Holder Text
+___
 ### `viewCards(message: Message`
-___
 Place Holder Text
-### `viewTable(message: Message)`
 ___
+### `viewTable(message: Message)`
 Place Holder Text 
