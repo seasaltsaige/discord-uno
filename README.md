@@ -4,7 +4,7 @@ Discord-UNO is meant to be an easy to use, fast, and efficient way to create and
 1. [What is discord-uno](https://github.com/Maxisthemoose/discord-uno#what-is-discord-uno)
 2. [Table of Contents](https://github.com/Maxisthemoose/discord-uno#table-of-contents)
 3. [Installation](https://github.com/Maxisthemoose/discord-uno#installation)
-4. [Getting Started](https://github.com/Maxisthemoose/discord-uno#gettings-started)
+4. [Getting Started](https://github.com/Maxisthemoose/discord-uno#getting-started)
 5. [Documentation](https://github.com/Maxisthemoose/discord-uno#documentation)
 ## Installation
 ```
