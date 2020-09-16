@@ -74,7 +74,7 @@ client.on("message", async message => {
 });
 ```
 ### viewCards(message: Message): Promise\<Message\>
-Place Holder Text
+To view your current hand in the game, call the viewCards() method. This method accepts one parameter, which is the Message object. This method will handle showing users the current cards that they have in their hand. It will return a dirrect message to the user with their hand.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!cards")
@@ -82,7 +82,7 @@ client.on("message", async message => {
 });
 ```
 ### viewTable(message: Message): Promise\<Message\>
-Place Holder Text
+To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!table")
