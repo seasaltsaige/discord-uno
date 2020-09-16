@@ -12,6 +12,10 @@ export class DiscordUNO {
         private settings = new Collection<Snowflake, Settings>()
     ) { };
     
+
+    /**
+     * To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
+     */
     public async createGame(message: Message): Promise<Message> {
         if (!this.settings.get(message.guild.id)) {
             this.settings.set(message.guild.id, {
@@ -42,6 +46,9 @@ export class DiscordUNO {
 
     };
 
+    /**
+     * To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
+     */
     public async addUser(message: Message): Promise<Message> {
         
         const foundGame = this.storage.get(message.channel.id);
@@ -73,7 +80,9 @@ export class DiscordUNO {
             
         return message.channel.send(`${message.author} joined ${message.channel}'s UNO! game!`);
     }
-
+    /**
+     * To remove a user from the game, call the removeUser() method. This method accepts one parameter, whcih is the Message object. This method will handle removing users from the game and returning their cards to the "deck".
+     */
     public async removeUser(message: Message): Promise<Message | void> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to leave from, try creating one instead!");
@@ -100,7 +109,9 @@ export class DiscordUNO {
             }
         }
     }
-
+    /**
+     * To view your current hand in the game, call the viewCards() method. This method accepts one parameter, which is the Message object. This method will handle showing users the current cards that they have in their hand. It will return a dirrect message to the user with their hand.
+     */
     public viewCards(message: Message): Promise<Message> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game going on in this channel to view cards in. Try creating one instead.");
@@ -109,6 +120,9 @@ export class DiscordUNO {
         return message.author.send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`);
     }
 
+    /**
+     * To manually start the game, call the startGame() method. This method accepts one parameter, which is the message object. This method will only work if the game has at least two users entered. Otherwise it will return. On success this method will send each user their cards and a starting message to the game channel.
+     */
     public startGame(message: Message): Promise<Message> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game going on in this channel to start. Try creating one instead.");
@@ -127,15 +141,17 @@ export class DiscordUNO {
 
         return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
     }
-
-    public playCard(message: Message, card: string): Promise<Message> {
+    /**
+     * To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
+     */
+    public playCard(message: Message): Promise<Message> {
 
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to play a card in! Try making a new game instead.");
         const settings = this.settings.get(message.channel.id);
 
         const user = foundGame.users[foundGame.currentPlayer];
-
+        const card = message.content.split(" ").slice(1).join(" ");
         if (!card) return message.channel.send("Please provide a valid card.");
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
@@ -166,7 +182,9 @@ export class DiscordUNO {
 
         return message.channel.send("");
     }
-
+    /**
+     * To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
+     */
     public viewTable(message: Message): Promise<Message> {
         return message.channel.send("lol");
     }
