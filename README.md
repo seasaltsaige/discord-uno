@@ -58,7 +58,7 @@ client.on("message", async message => {
 });
 ```
 ### startGame(message: Message): Promise\<Message\>
-Place Holder Text
+To manually start the game, call the startGame() method. This method accepts one parameter, which is the message object. This method will only work if the game has at least two users entered. Otherwise it will return. On success this method will send each user their cards and a starting message to the game channel.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!startgame")
@@ -66,7 +66,7 @@ client.on("message", async message => {
 });
 ```
 ### playCard(message: Message): Promise\<Message\>
-Place Holder Text
+To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!play")
