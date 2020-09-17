@@ -156,33 +156,43 @@ export class DiscordUNO {
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
 
-        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
-
         let jumpedIn = false;
-
         if (settings.jumpIns) {
             if (cardObject.name === foundGame.topCard.name && user.id !== message.author.id) {
                 jumpedIn = true;
                 foundGame.currentPlayer = foundGame.users.findIndex(user => user.id === message.author.id);
             } else return message.channel.send("It isn't your turn yet!");
         } else if (user.id !== message.author.id) return message.channel.send("Jump in's are disabled in this game, and it isn't your turn yet!");
+
+        if (!this.checkTop(foundGame.topCard, cardObject)) return message.channel.send(`You can't play that card! Either play a ${foundGame.topCard.value} Card or a ${foundGame.topCard.color} Card.`);
+
+        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
+
+        const lastPlayer = foundGame.currentPlayer;
         
         const special = await this.doSpecialCardAbility(message, cardObject, foundGame);
 
-        if (special) {
+        console.log(lastPlayer)
+        console.log(this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame), "normal");
+        console.log(this.nextTurn(foundGame.currentPlayer, "skip", settings, foundGame), "skip");
 
+        if (special) {
+            message.channel.send("Special Card Detected");
         } else {
 
-            const lastPlayer = foundGame.currentPlayer;
+
             foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame);
-
-
-            this.storage.set(message.channel.id, foundGame);
             
-            return message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
+            message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
         }
 
-        return message.channel.send("");
+
+        foundGame.topCard = cardObject;
+        foundGame.users[lastPlayer].hand.splice(foundGame.users[lastPlayer].hand.findIndex(crd => crd.name === cardObject.name), 1);
+
+        this.storage.set(message.channel.id, foundGame);
+
+        return this.client.users.cache.get(foundGame.users[lastPlayer].id).send(`Your new hand has ${foundGame.users[lastPlayer].hand.length} cards.\n${foundGame.users[lastPlayer].hand.map(crd => crd.name).join(" | ")}`);
     }
     /**
      * To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
@@ -204,12 +214,19 @@ export class DiscordUNO {
         return message.channel.send("Yeet");
     }
 
+    private checkTop(topCard: Card, playedCard: Card): boolean {
+        if ((topCard.color === playedCard.color || topCard.value === playedCard.value || playedCard.value === 'Wild' || playedCard.value === 'Wild Draw Four')) return true;
+        else return false;
+    }
+
     private async doSpecialCardAbility(message: Message, card: Card, data: GameData): Promise<boolean> {
 
+        let special = false;
         const settings = this.settings.get(message.guild.id);
+        let type: "normal" | "skip";
 
         if (card.name.toLowerCase() === "wild draw four") {
-
+            special = true;
             let color: "green" | "red" | "blue" | "yellow";
             const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`);
     
@@ -272,6 +289,7 @@ export class DiscordUNO {
                 let challengeWIN;
                 if (challenge) {
                     if (data.users.find(user => user.id === challenged.id).hand.find(crd => crd.value === data.topCard.value) || data.users.find(user => user.id === challenged.id).hand.find(crd => crd.color === data.topCard.color)) {
+                        type = "normal";
                         challengeWIN = true;
                         let newCards = await this.createCards(6, false);
                         newCards.forEach(c => {
@@ -281,6 +299,7 @@ export class DiscordUNO {
                         challenged.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "))
 
                     } else {
+                        type = "skip";
                         challengeWIN = false;
                         let newCards = await this.createCards(6, false);
                         newCards.forEach(c => {
@@ -290,6 +309,7 @@ export class DiscordUNO {
                         challenger.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "))
                     }
                 } else {
+                    type = "skip";
                     challengeWIN = null;
                     let newCards = await this.createCards(4, false);
                     newCards.forEach(c => {
@@ -302,7 +322,7 @@ export class DiscordUNO {
 
             } else {
 
-
+                type = "skip";
                 let newCards = await this.createCards(4, false);
                 newCards.forEach(c => {
                     data.users[nextUser].hand.push(c);
@@ -314,20 +334,33 @@ export class DiscordUNO {
             }
 
         } else if (card.name.toLowerCase() === "wild") {
-
+            type = "normal";
+            special = true;
         } else if (card.name.toLowerCase().includes("reverse")) {
-            
+            special = true;
+            type = "normal";
+            settings.reverse = !settings.reverse;
         } else if (card.name.toLowerCase().includes("skip")) {
-
+            type = "skip";
+            special = true;
         } else if (card.name.toLowerCase().includes("zero")) {
-
+            type = "normal";
+            special = true;
         } else if (card.name.toLowerCase().includes("seven")) {
-
+            type = "normal";
+            special = true;
         } else if (card.name.toLowerCase().includes("draw two")) {
+            type = "skip";
+            special = true;
+        }
+        if (special) {
+            data.currentPlayer = this.nextTurn(data.currentPlayer, type, settings, data);
 
+            this.settings.set(message.guild.id, settings);
+            this.storage.set(message.channel.id, data);
         }
 
-        return false;
+        return special;
     }
 
     private returnCards (cards: Card[]): void {

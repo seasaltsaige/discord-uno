@@ -34,74 +34,82 @@ client.login("token");
 
 # Documentation
 ### createGame(message: Message): Promise\<Message\>
-To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!creategame")
         await discordUNO.createGame(message);
 });
 ```
+To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
+___
 ### addUser(message: Message): Promise\<Message\>
-To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!join")
         await discordUNO.addUser(message);
 });
 ```
+To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
+___
 ### removeUser(message: Message): Promise\<Message\>
-To remove a user from the game, call the removeUser() method. This method accepts one parameter, whcih is the Message object. This method will handle removing users from the game and returning their cards to the "deck".
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!leave")
         await discordUNO.removeUser(message);
 });
 ```
+To remove a user from the game, call the removeUser() method. This method accepts one parameter, whcih is the Message object. This method will handle removing users from the game and returning their cards to the "deck".
+___
 ### startGame(message: Message): Promise\<Message\>
-To manually start the game, call the startGame() method. This method accepts one parameter, which is the message object. This method will only work if the game has at least two users entered. Otherwise it will return. On success this method will send each user their cards and a starting message to the game channel.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!startgame")
         await discordUNO.startGame(message);
 });
 ```
+To manually start the game, call the startGame() method. This method accepts one parameter, which is the message object. This method will only work if the game has at least two users entered. Otherwise it will return. On success this method will send each user their cards and a starting message to the game channel.
+___
 ### endGame(message: Message): Promise\<Message\>
-To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!endgame")
         await discordUNO.endGame(message);
 });
 ```
+To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
+___
 ### closeGame(message: Message): Promise\<Message\>
-To close the current game without scoring results, call the closeGame() method. This method accepts one parameter, which is the message object. This method will close the game without scoring any of the users and will immediately end the game. No score will be output and a new game can be created.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!closegame")
         await discordUNO.closeGame(message);
 });
 ```
+To close the current game without scoring results, call the closeGame() method. This method accepts one parameter, which is the message object. This method will close the game without scoring any of the users and will immediately end the game. No score will be output and a new game can be created.
+___
 ### playCard(message: Message): Promise\<Message\>
-To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!play")
         await discordUNO.playCard(message);
 });
 ```
+To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
+___
 ### viewCards(message: Message): Promise\<Message\>
-To view your current hand in the game, call the viewCards() method. This method accepts one parameter, which is the Message object. This method will handle showing users the current cards that they have in their hand. It will return a dirrect message to the user with their hand.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!cards")
         await discordUNO.viewCards(message);
 });
 ```
+To view your current hand in the game, call the viewCards() method. This method accepts one parameter, which is the Message object. This method will handle showing users the current cards that they have in their hand. It will return a dirrect message to the user with their hand.
+___
 ### viewTable(message: Message): Promise\<Message\>
-To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!table")
         await discordUNO.viewTable(message);
 });
 ```
+To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
