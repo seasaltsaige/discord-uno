@@ -74,7 +74,7 @@ client.on("message", async message => {
 });
 ```
 ### closeGame(message: Message): Promise\<Message\>
-Place Holder Text
+To close the current game without scoring results, call the closeGame() method. This method accepts one parameter, which is the message object. This method will close the game without scoring any of the users and will immediately end the game. No score will be output and a new game can be created.
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!closegame")

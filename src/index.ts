@@ -190,11 +190,16 @@ export class DiscordUNO {
     public viewTable(message: Message): Promise<Message> {
         return message.channel.send("lol");
     }
-
+    /**
+     * To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
+     */
     public endGame(message: Message): Promise<Message> {
         return message.channel.send("nice");
     }
 
+    /**
+     * To close the current game without scoring results, call the closeGame() method. This method accepts one parameter, which is the message object. This method will close the game without scoring any of the users and will immediately end the game. No score will be output and a new game can be created.
+     */
     public closeGame(message: Message): Promise<Message> {
         return message.channel.send("Yeet");
     }
