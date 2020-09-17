@@ -352,6 +352,7 @@ export class DiscordUNO {
         } else if (card.name.toLowerCase().includes("skip")) {
             type = "skip";
             special = true;
+            message.channel.send(`${message.author.tag} skipped ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).tag} with a ${card.name}. It is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).tag}'s turn!`);
         } else if (card.name.toLowerCase().includes("zero")) {
             type = "normal";
             special = true;
