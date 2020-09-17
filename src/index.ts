@@ -8,7 +8,7 @@ export class DiscordUNO {
     constructor(
         public client: Client, 
         private storage = new Collection<Snowflake, GameData>(), 
-        private gameCards = gameCardsArray,
+        private gameCards = new Collection<Snowflake, typeof gameCardsArray>(),
         private settings = new Collection<Snowflake, Settings>()
     ) { };
     
@@ -27,6 +27,9 @@ export class DiscordUNO {
                 zero: false,
             });
         }
+
+        this.gameCards.set(message.channel.id, gameCardsArray);
+
         if (this.storage.get(message.channel.id)) return message.channel.send("There is already a game going on in this channel. Please join that one instead or create a new game in another channel.");
         this.storage.set(message.channel.id, {
             guild: (<Guild>message.guild).id,
@@ -35,10 +38,10 @@ export class DiscordUNO {
             active: false,
             users: [{
                 id: message.author.id,
-                hand: await this.createCards(7, false),
+                hand: await this.createCards(message, 7, false),
                 safe: false,
             }],
-            topCard: (await this.createCards(1, true))[0],
+            topCard: (await this.createCards(message, 1, true))[0],
             currentPlayer: 1,
         });
 
@@ -60,7 +63,7 @@ export class DiscordUNO {
 
         foundGame.users.push({
             id: message.author.id,
-            hand: await this.createCards(7, false),
+            hand: await this.createCards(message, 7, false),
             safe: false,
         });
         
@@ -100,7 +103,7 @@ export class DiscordUNO {
             const reaction = <MessageReaction>response.first();
             if (reaction.emoji.name === "✅") {
                 const userHand = <Card[]>(<{ id: string, hand: Card[], safe: boolean }>foundGame.users.find(user => user.id === message.author.id)).hand;
-                this.returnCards(userHand);
+                this.returnCards(message, userHand);
                 foundGame.users.splice(foundGame.users.findIndex(data => data.id === message.author.id), 1);
                 this.storage.set(message.channel.id, foundGame);
                 msg.edit(`${message.author} has been successfully removed from the game.`);
@@ -172,10 +175,6 @@ export class DiscordUNO {
         
         const special = await this.doSpecialCardAbility(message, cardObject, foundGame);
 
-        console.log(lastPlayer)
-        console.log(this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame), "normal");
-        console.log(this.nextTurn(foundGame.currentPlayer, "skip", settings, foundGame), "skip");
-
         if (special) {
             message.channel.send("Special Card Detected");
         } else {
@@ -211,7 +210,15 @@ export class DiscordUNO {
      * To close the current game without scoring results, call the closeGame() method. This method accepts one parameter, which is the message object. This method will close the game without scoring any of the users and will immediately end the game. No score will be output and a new game can be created.
      */
     public closeGame(message: Message): Promise<Message> {
-        return message.channel.send("Yeet");
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("There is no game to end in this channel.");
+
+        if (foundGame.creator !== message.author.id) return message.channel.send("You can't close this game!");
+        
+        this.storage.delete(message.channel.id);
+        this.gameCards.delete(message.channel.id);
+
+        return message.channel.send(`Successfully closed ${message.channel}'s UNO! game.`);
     }
 
     private checkTop(topCard: Card, playedCard: Card): boolean {
@@ -291,7 +298,7 @@ export class DiscordUNO {
                     if (data.users.find(user => user.id === challenged.id).hand.find(crd => crd.value === data.topCard.value) || data.users.find(user => user.id === challenged.id).hand.find(crd => crd.color === data.topCard.color)) {
                         type = "normal";
                         challengeWIN = true;
-                        let newCards = await this.createCards(6, false);
+                        let newCards = await this.createCards(message, 6, false);
                         newCards.forEach(c => {
                             data.users.find(user => user.id === challenged.id).hand.push(c);
                         });
@@ -301,7 +308,7 @@ export class DiscordUNO {
                     } else {
                         type = "skip";
                         challengeWIN = false;
-                        let newCards = await this.createCards(6, false);
+                        let newCards = await this.createCards(message, 6, false);
                         newCards.forEach(c => {
                             data.users.find(user => user.id === challenger.id).hand.push(c);
                         });
@@ -311,7 +318,7 @@ export class DiscordUNO {
                 } else {
                     type = "skip";
                     challengeWIN = null;
-                    let newCards = await this.createCards(4, false);
+                    let newCards = await this.createCards(message, 4, false);
                     newCards.forEach(c => {
                         data.users[nextUser].hand.push(c);
                     });
@@ -323,7 +330,7 @@ export class DiscordUNO {
             } else {
 
                 type = "skip";
-                let newCards = await this.createCards(4, false);
+                let newCards = await this.createCards(message, 4, false);
                 newCards.forEach(c => {
                     data.users[nextUser].hand.push(c);
                 });
@@ -337,9 +344,11 @@ export class DiscordUNO {
             type = "normal";
             special = true;
         } else if (card.name.toLowerCase().includes("reverse")) {
+
             special = true;
             type = "normal";
             settings.reverse = !settings.reverse;
+
         } else if (card.name.toLowerCase().includes("skip")) {
             type = "skip";
             special = true;
@@ -353,6 +362,7 @@ export class DiscordUNO {
             type = "skip";
             special = true;
         }
+
         if (special) {
             data.currentPlayer = this.nextTurn(data.currentPlayer, type, settings, data);
 
@@ -363,39 +373,40 @@ export class DiscordUNO {
         return special;
     }
 
-    private returnCards (cards: Card[]): void {
+    private returnCards (message: Message, cards: Card[]): void {
+        const gameCards = this.gameCards.get(message.channel.id);
         for (const card of cards) {
             let userdCard;
             switch (card.color) {
                 case "red":
-                    userdCard = <Card>this.gameCards.red.find(c => c.name === card.name);
+                    userdCard = gameCards.red.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
                 break;
                 case "yellow":
-                    userdCard = <Card>this.gameCards.yellow.find(c => c.name === card.name);
+                    userdCard = gameCards.yellow.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
                 break;
                 case "blue":
-                    userdCard = <Card>this.gameCards.blue.find(c => c.name === card.name);
+                    userdCard = gameCards.blue.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
                 break;
                 case "green":
-                    userdCard = <Card>this.gameCards.green.find(c => c.name === card.name);
+                    userdCard = gameCards.green.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
                 break;
                 case null:
-                    userdCard = <Card>this.gameCards.wild.find(c => c.name === card.name);
+                    userdCard = gameCards.wild.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
                 break;
             }
         }
     }
 
-    private async createCards(amount: number, topCard: boolean) {
+    private async createCards(message: Message, amount: number, topCard: boolean) {
         if (!topCard) topCard = false;
         let counter = 0;
         let cardHand: Card[] = [];
-        let cards = this.gameCards;
+        let cards = this.gameCards.get(message.channel.id);
         do {
             let math = Math.floor(Math.random() * 4) + 1;
             let math2 = Math.random();
