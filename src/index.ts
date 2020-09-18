@@ -346,9 +346,10 @@ export class DiscordUNO {
         } else if (card.name.toLowerCase().includes("reverse")) {
 
             special = true;
-            type = "normal";
+            if (data.users.length === 2) type = "skip";
+            else type = "normal";
             settings.reverse = !settings.reverse;
-
+            message.channel.send(`${message.author.tag} played a ${card.name}. It is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, type, settings, data)].id).tag}'s turn`);
         } else if (card.name.toLowerCase().includes("skip")) {
             type = "skip";
             special = true;
