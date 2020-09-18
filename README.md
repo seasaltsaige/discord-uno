@@ -1,5 +1,5 @@
 # What is discord-uno?
-Discord-UNO is meant to be an easy to use, fast, and efficient way to create and handle your very own UNO! games in your Discord bot!
+Discord-UNO is meant to be an easy to use, fast, and efficient way to create and handle your very own UNO! games in your Discord bot! You can see an example of this package in use [here](https://github.com/Maxisthemoose/example-discord-uno-bot)
 ## Table of Contents
 1. [What is discord-uno](https://github.com/Maxisthemoose/discord-uno#what-is-discord-uno)
 2. [Table of Contents](https://github.com/Maxisthemoose/discord-uno#table-of-contents)
@@ -125,6 +125,7 @@ To view the current state of the game, call the viewTable() method. This method 
 ___
 ### updateSettings(message: Message, setting: [Setting](https://github.com/Maxisthemoose/discord-uno#setting), set: boolean): Promise\<Message\>
 ```js
+const prefix = "!";
 client.on("message", async message => {
     if (message.content.toLowerCase().startsWith("!settings")) {
         const args = message.content.slice(prefix.length).trim().split(/ +/g);

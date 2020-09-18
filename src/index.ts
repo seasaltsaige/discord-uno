@@ -1,8 +1,9 @@
-import { Client, ClientUser, Collection, Guild, Message, MessageEmbed, MessageReaction, Snowflake, User } from "discord.js";
+import { Client, Collection, Guild, Message, MessageReaction, Snowflake, User } from "discord.js";
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
 import Settings from "./data/interfaces/Settings.interface";
+import Player from "./data/interfaces/User.interface";
 
 export class DiscordUNO {
     constructor(
@@ -102,7 +103,7 @@ export class DiscordUNO {
         if (response.size > 0) {
             const reaction = <MessageReaction>response.first();
             if (reaction.emoji.name === "✅") {
-                const userHand = <Card[]>(<{ id: string, hand: Card[], safe: boolean }>foundGame.users.find(user => user.id === message.author.id)).hand;
+                const userHand = <Card[]>(<Player>foundGame.users.find(user => user.id === message.author.id)).hand;
                 this.returnCards(message, userHand);
                 foundGame.users.splice(foundGame.users.findIndex(data => data.id === message.author.id), 1);
                 this.storage.set(message.channel.id, foundGame);
@@ -118,7 +119,7 @@ export class DiscordUNO {
     public viewCards(message: Message): Promise<Message> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game going on in this channel to view cards in. Try creating one instead.");
-        const userHand = (<{ id: Snowflake, hand: Card[], safe: false }>foundGame.users.find(user => user.id === message.author.id)).hand;
+        const userHand = (<Player>foundGame.users.find(user => user.id === message.author.id)).hand;
         message.channel.send(`${message.author}, check your DMs!`);
         return message.author.send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`);
     }
@@ -365,12 +366,14 @@ export class DiscordUNO {
             type = "normal";
             special = true;
         } else if (card.name.toLowerCase().includes("reverse")) {
-
             special = true;
+            
             if (data.users.length === 2) type = "skip";
             else type = "normal";
+
             settings.reverse = !settings.reverse;
             message.channel.send(`${message.author.tag} played a ${card.name}. It is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, type, settings, data)].id).tag}'s turn`);
+            
         } else if (card.name.toLowerCase().includes("skip")) {
             type = "skip";
             special = true;
@@ -384,6 +387,15 @@ export class DiscordUNO {
         } else if (card.name.toLowerCase().includes("draw two")) {
             type = "skip";
             special = true;
+
+            const newCards = await this.createCards(message, 2, false);
+
+            const skippedUser = data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)];
+
+            newCards.forEach(c => skippedUser.hand.push(c));
+
+            message.channel.send(`${message.author.tag} played a ${card.name} on ${this.client.users.cache.get(skippedUser.id).tag}. They drew two cards and it is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).tag}'s turn!`);
+
         }
 
         if (special) {
