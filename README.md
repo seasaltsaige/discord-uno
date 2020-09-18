@@ -96,6 +96,15 @@ client.on("message", async message => {
 ```
 To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
 ___
+### draw(message: Message): Promise\<Message\>
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!draw")
+        await discordUNO.draw(message);
+});
+```
+Place Holder Text
+___
 ### viewCards(message: Message): Promise\<Message\>
 ```js
 client.on("message", async message => {
@@ -113,3 +122,23 @@ client.on("message", async message => {
 });
 ```
 To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
+___
+### updateSettings(message: Message, setting: [Setting](https://github.com/Maxisthemoose/discord-uno#setting), set: boolean): Promise\<Message\>
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase().startsWith("!settings")) {
+        const args = message.content.slice(prefix.length).trim().split(/ +/g);
+
+        const setting = args[1];
+        const onOff = args[2];
+        const set = onOff === "on" ? true : onOff === "off" ? false : null;
+
+        await discordUNO.updateSetting(message, setting, set);
+    }
+});
+```
+Place Holder Text
+## Types
+___
+### Setting
+> Possible options are: `jumpIns, seven, stacking, wildChallenge, zero`. Any other string will throw an error.
