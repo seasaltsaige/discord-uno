@@ -227,6 +227,12 @@ export class DiscordUNO {
         return message.channel.send("yeet");
     }
 
+    /**
+     * To update the servers UNO! settings, call the updateSettings() method. This method has three parameters, the first one is the Message object, the second one is which setting you are updating, the third one is if you are turning it on or off. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID)
+     * @param message The message object.
+     * @param setting Which setting you are updating.
+     * @param set If you are turning it on or off.
+     */
     public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
         return message.channel.send("Nice")
     }

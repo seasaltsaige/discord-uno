@@ -137,7 +137,7 @@ client.on("message", async message => {
     }
 });
 ```
-Place Holder Text
+To update the servers UNO! settings, call the updateSettings() method. This method has three parameters, the first one is the Message object, the second one is which setting you are updating, the third one is if you are turning it on or off. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID)
 ## Types
 ### Setting
-> Possible options are: `jumpIns, seven, stacking, wildChallenge, zero`. Any other string will throw an error.
+Possible options are: `jumpIns, seven, stacking, wildChallenge, zero`. Any other string will throw an error.
