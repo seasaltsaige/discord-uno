@@ -220,7 +220,9 @@ export class DiscordUNO {
 
         return message.channel.send(`Successfully closed ${message.channel}'s UNO! game.`);
     }
-
+    /**
+     * To add a card to your hand, call the draw() method. This method accepts one parameter, which is the message object. This method will handle adding cards to the users hand. Players can't draw if it isn't their turn and if they have a card they can play, they can't draw.
+     */
     public draw(message: Message): Promise<Message> {
         return message.channel.send("yeet");
     }
@@ -228,6 +230,11 @@ export class DiscordUNO {
     public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
         return message.channel.send("Nice")
     }
+
+
+    // Public Methods Above
+    // Private Methods Below
+
 
     private checkTop(topCard: Card, playedCard: Card): boolean {
         if ((topCard.color === playedCard.color || topCard.value === playedCard.value || playedCard.value === 'Wild' || playedCard.value === 'Wild Draw Four')) return true;

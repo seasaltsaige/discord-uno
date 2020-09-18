@@ -103,7 +103,7 @@ client.on("message", async message => {
         await discordUNO.draw(message);
 });
 ```
-Place Holder Text
+To add a card to your hand, call the draw() method. This method accepts one parameter, which is the message object. This method will handle adding cards to the users hand. Players can't draw if it isn't their turn and if they have a card they can play, they can't draw.
 ___
 ### viewCards(message: Message): Promise\<Message\>
 ```js
@@ -139,6 +139,5 @@ client.on("message", async message => {
 ```
 Place Holder Text
 ## Types
-___
 ### Setting
 > Possible options are: `jumpIns, seven, stacking, wildChallenge, zero`. Any other string will throw an error.
