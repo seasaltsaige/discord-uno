@@ -221,6 +221,14 @@ export class DiscordUNO {
         return message.channel.send(`Successfully closed ${message.channel}'s UNO! game.`);
     }
 
+    public draw(message: Message): Promise<Message> {
+        return message.channel.send("yeet");
+    }
+
+    public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
+        return message.channel.send("Nice")
+    }
+
     private checkTop(topCard: Card, playedCard: Card): boolean {
         if ((topCard.color === playedCard.color || topCard.value === playedCard.value || playedCard.value === 'Wild' || playedCard.value === 'Wild Draw Four')) return true;
         else return false;
