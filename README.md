@@ -1,5 +1,5 @@
 # What is discord-uno?
-Discord-UNO is meant to be an easy to use, fast, and efficient way to create and handle your very own UNO! games in your Discord bot! You can see an example of this package in use [here](https://github.com/Maxisthemoose/example-discord-uno-bot)
+Discord-UNO is meant to be an easy to use, fast, and efficient way to create and handle your very own UNO! games in your Discord bot! You can see an example of this package in use [here](https://github.com/Maxisthemoose/example-discord-uno-bot).
 ## Table of Contents
 1. [What is discord-uno](https://github.com/Maxisthemoose/discord-uno#what-is-discord-uno)
 2. [Table of Contents](https://github.com/Maxisthemoose/discord-uno#table-of-contents)
