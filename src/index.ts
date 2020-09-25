@@ -39,10 +39,10 @@ export class DiscordUNO {
             active: false,
             users: [{
                 id: message.author.id,
-                hand: await this.createCards(message, 7, false),
+                hand: this.createCards(message, 7, false),
                 safe: false,
             }],
-            topCard: (await this.createCards(message, 1, true))[0],
+            topCard: (this.createCards(message, 1, true))[0],
             currentPlayer: 1,
         });
 
@@ -64,7 +64,7 @@ export class DiscordUNO {
 
         foundGame.users.push({
             id: message.author.id,
-            hand: await this.createCards(message, 7, false),
+            hand: this.createCards(message, 7, false),
             safe: false,
         });
         
@@ -225,7 +225,21 @@ export class DiscordUNO {
      * To add a card to your hand, call the draw() method. This method accepts one parameter, which is the message object. This method will handle adding cards to the users hand. Players can't draw if it isn't their turn and if they have a card they can play, they can't draw.
      */
     public draw(message: Message): Promise<Message> {
-        return message.channel.send("yeet");
+        
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("You can't draw cards from a game that doesn't exist! Try making one instead!");
+        if (!foundGame.users.some(user => user.id === message.author.id)) return message.channel.send("You can't draw cards in this game! You aren't part of it!");
+        if (!foundGame.active) return message.channel.send("You can't draw cards from a game that hasn't started yet!");
+        if (foundGame.users[foundGame.currentPlayer].id !== message.author.id) return message.channel.send("You can't draw cards yet! It isn't your turn.");
+        const newCard = this.createCards(message, 1, false);
+
+        foundGame.users[foundGame.currentPlayer].hand.push(newCard[0]);
+
+        message.channel.send(`${message.author}, check your DMs for your new hand!`);
+
+        this.storage.set(message.channel.id, foundGame);
+
+        return message.guild.members.cache.get(foundGame.users[foundGame.currentPlayer].id).send(`Your new hand has ${foundGame.users[foundGame.currentPlayer].hand.length}.\n\n${foundGame.users[foundGame.currentPlayer].hand.map(c => c.name).join(" | ")}`);
     }
 
     /**
@@ -322,7 +336,7 @@ export class DiscordUNO {
                     if (data.users.find(user => user.id === challenged.id).hand.find(crd => crd.value === data.topCard.value) || data.users.find(user => user.id === challenged.id).hand.find(crd => crd.color === data.topCard.color)) {
                         type = "normal";
                         challengeWIN = true;
-                        let newCards = await this.createCards(message, 6, false);
+                        let newCards = this.createCards(message, 6, false);
                         newCards.forEach(c => {
                             data.users.find(user => user.id === challenged.id).hand.push(c);
                         });
@@ -333,7 +347,7 @@ export class DiscordUNO {
                     } else {
                         type = "skip";
                         challengeWIN = false;
-                        let newCards = await this.createCards(message, 6, false);
+                        let newCards = this.createCards(message, 6, false);
                         newCards.forEach(c => {
                             data.users.find(user => user.id === challenger.id).hand.push(c);
                         });
@@ -344,7 +358,7 @@ export class DiscordUNO {
                 } else {
                     type = "skip";
                     challengeWIN = null;
-                    let newCards = await this.createCards(message, 4, false);
+                    let newCards = this.createCards(message, 4, false);
                     newCards.forEach(c => {
                         data.users[nextUser].hand.push(c);
                     });
@@ -357,7 +371,7 @@ export class DiscordUNO {
             } else { // Still need to do responses for the Draw Four
                 const nextTurnUser = message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).user;
                 type = "skip";
-                let newCards = await this.createCards(message, 4, false);
+                let newCards = this.createCards(message, 4, false);
                 newCards.forEach(c => {
                     data.users[nextUser].hand.push(c);
                 });
@@ -472,7 +486,7 @@ export class DiscordUNO {
             type = "skip";
             special = true;
 
-            const newCards = await this.createCards(message, 2, false);
+            const newCards = this.createCards(message, 2, false);
 
             const skippedUser = data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)];
 
@@ -523,7 +537,7 @@ export class DiscordUNO {
         }
     }
 
-    private async createCards(message: Message, amount: number, topCard: boolean) {
+    private createCards(message: Message, amount: number, topCard: boolean) {
         if (!topCard) topCard = false;
         let counter = 0;
         let cardHand: Card[] = [];
@@ -539,49 +553,49 @@ export class DiscordUNO {
     
             switch (math) {
                 case 1:
-                    const yellowCard = async (): Promise<void> => {
-                        let tempMath = Math.floor(Math.random() * cards.yellow.length);
-                        if (cards.yellow[tempMath].inPlay >= cards.yellow[tempMath].count) return await yellowCard();
+                    const yellowCard = (): void => {
+                        const tempMath = Math.floor(Math.random() * cards.yellow.length);
+                        if (cards.yellow[tempMath].inPlay >= cards.yellow[tempMath].count) return yellowCard();
                         cardHand.push(cards.yellow[tempMath])
                         cards.yellow[tempMath].inPlay += 1;
                     }
-                    await yellowCard();
+                    yellowCard();
                 break;
                 case 2:
-                    let redCard = async (): Promise<void>  => {
-                        let tempMath2 = Math.floor(Math.random() * cards.red.length);
-                        if (cards.red[tempMath2].inPlay >= cards.red[tempMath2].count) return await redCard();
+                    const redCard = (): void => {
+                        const tempMath2 = Math.floor(Math.random() * cards.red.length);
+                        if (cards.red[tempMath2].inPlay >= cards.red[tempMath2].count) return redCard();
                         cardHand.push(cards.red[tempMath2]);
                         cards.red[tempMath2].inPlay += 1;
                     }
-                    await redCard();
+                    redCard();
                 break;
                 case 3:
-                    let greenCard = async (): Promise<void>  => {
-                        let tempMath3 = Math.floor(Math.random() * cards.green.length);
-                        if (cards.green[tempMath3].inPlay >= cards.green[tempMath3].count) return await greenCard();
+                    const greenCard = (): void => {
+                        const tempMath3 = Math.floor(Math.random() * cards.green.length);
+                        if (cards.green[tempMath3].inPlay >= cards.green[tempMath3].count) return greenCard();
                         cardHand.push(cards.green[tempMath3]);
                         cards.green[tempMath3].inPlay += 1;
                     }
-                    await greenCard();
+                    greenCard();
                 break;
                 case 4:
-                    let blueCard = async (): Promise<void>  => {
-                        let tempMath4 = Math.floor(Math.random() * cards.blue.length);
-                        if (cards.blue[tempMath4].inPlay >= cards.blue[tempMath4].count) return await blueCard();
+                    const blueCard = (): void => {
+                        const tempMath4 = Math.floor(Math.random() * cards.blue.length);
+                        if (cards.blue[tempMath4].inPlay >= cards.blue[tempMath4].count) return blueCard();
                         cardHand.push(cards.blue[tempMath4]);
                         cards.blue[tempMath4].inPlay += 1;
                     }
-                    await blueCard();
+                    blueCard();
                 break;
                 case 5:
-                    let wildCard = async (): Promise<void>  => {
-                        let tempMath5 = Math.floor(Math.random() * cards.wild.length);
-                        if (cards.wild[tempMath5].inPlay >= cards.wild[tempMath5].count) return await wildCard();
+                    const wildCard = (): void => {
+                        const tempMath5 = Math.floor(Math.random() * cards.wild.length);
+                        if (cards.wild[tempMath5].inPlay >= cards.wild[tempMath5].count) return wildCard();
                         cardHand.push(<Card>cards.wild[tempMath5]);
                         cards.wild[tempMath5].inPlay += 1;
                     }
-                    await wildCard();
+                    wildCard();
                 break;
             }
             counter++
