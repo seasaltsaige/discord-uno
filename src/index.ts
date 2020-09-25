@@ -235,6 +235,7 @@ export class DiscordUNO {
      * @param set If you are turning it on or off.
      */
     public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
+        
         return message.channel.send("Nice")
     }
 
@@ -281,7 +282,9 @@ export class DiscordUNO {
             if (!color) {
                 const math = <1 | 2 | 3 | 4>(Math.floor(Math.random() * 4) + 1);
                 color = <"green" | "red" | "blue" | "yellow">(colors[math]);
-            } 
+            }
+
+            data.topCard.color = color;
 
             const nextUser = this.nextTurn(data.currentPlayer, "normal", settings, data);
 
@@ -294,8 +297,6 @@ export class DiscordUNO {
                 await Promise.all([msg.react("✅"), msg.react("❌")]);
 
                 const f = (reaction: MessageReaction, user: User) => ["✅", "❌"].includes(reaction.emoji.name) && user.id === user.id;
-
-
 
                 let collected2 = await msg.awaitReactions(f, { max: 1, time: 30000 });
                 if (collected2.size > 0) {
@@ -314,8 +315,9 @@ export class DiscordUNO {
 
                 const challenged = message.author;
                 const challenger = user;
+                const nextTurnUser = message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).user;
 
-                let challengeWIN;
+                let challengeWIN: boolean;
                 if (challenge) {
                     if (data.users.find(user => user.id === challenged.id).hand.find(crd => crd.value === data.topCard.value) || data.users.find(user => user.id === challenged.id).hand.find(crd => crd.color === data.topCard.color)) {
                         type = "normal";
@@ -325,7 +327,8 @@ export class DiscordUNO {
                             data.users.find(user => user.id === challenged.id).hand.push(c);
                         });
 
-                        challenged.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "))
+                        challenged.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "));
+                        message.channel.send(`${message.author.tag} just played a ${card.name} on ${challenger.tag} and lost the challege! ${challenged.tag} drew 6 cards. It is now ${challenger.tag}'s turn!`);
 
                     } else {
                         type = "skip";
@@ -335,7 +338,8 @@ export class DiscordUNO {
                             data.users.find(user => user.id === challenger.id).hand.push(c);
                         });
 
-                        challenger.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "))
+                        challenger.send(data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - "));
+                        message.channel.send(`${message.author.tag} just played a ${card.name} on ${challenger.tag} and won the challenge! ${challenger.tag} drew 6 cards. It is now ${nextTurnUser.tag}'s turn!`);
                     }
                 } else {
                     type = "skip";
@@ -346,11 +350,12 @@ export class DiscordUNO {
                     });
 
                     const userToSend =  this.client.users.cache.get(data.users[nextUser].id)
-                    userToSend.send(data.users[nextUser].hand.map(c => c.name).join(" - "));    
+                    userToSend.send(data.users[nextUser].hand.map(c => c.name).join(" - "));   
+                    message.channel.send(`${message.author.tag} just played a ${card.name} on ${challenger.tag}. ${challenger.tag} decided not to challenge... They drew 4 cards and it is now ${nextTurnUser.tag}'s turn.`); 
                 }
 
-            } else {
-
+            } else { // Still need to do responses for the Draw Four
+                const nextTurnUser = message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).user;
                 type = "skip";
                 let newCards = await this.createCards(message, 4, false);
                 newCards.forEach(c => {
@@ -359,13 +364,51 @@ export class DiscordUNO {
     
                 const userToSend = this.client.users.cache.get(data.users[nextUser].id)
                 userToSend.send(data.users[nextUser].hand.map(c => c.name).join(" - "));
+                message.channel.send(`${message.author.tag} just played a ${card.name} on ${userToSend.tag} and ${userToSend.tag} drew 4 cards. It is now ${nextTurnUser.tag}'s turn.`);
     
             }
 
-        } else if (card.name.toLowerCase() === "wild") {
+
+        } else if (card.name.toLowerCase() === "wild") { // Not Done
             type = "normal";
             special = true;
-        } else if (card.name.toLowerCase().includes("reverse")) {
+
+            let color: "green" | "red" | "blue" | "yellow";
+            const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`)
+    
+            const filter = (reaction: MessageReaction, user: User) => {
+                if (user.bot) return;
+                if (user.id !== message.author.id) return;
+                return (["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && user.id === message.author.id);
+            };
+    
+            await Promise.all([msg.react("🟢"), msg.react("🔴"), msg.react("🔵"), msg.react("🟡"), ])
+    
+            let collected = await msg.awaitReactions(filter, { max: 1, time: 30000 })
+            const reaction = collected.first();
+            if (reaction !== undefined) {
+                if (reaction.emoji.name === '🟢') {
+                    color = 'green'
+                } else if (reaction.emoji.name === '🔴') {
+                    color = 'red'
+                } else if (reaction.emoji.name === '🔵') {
+                    color = 'blue'
+                } else if (reaction.emoji.name === '🟡') {
+                    color = 'yellow'
+                }
+            }
+    
+            const colors = { 1: "green", 2: "red", 3: "blue", 4: "yellow" };
+            if (!color) {
+                const math = <1 | 2 | 3 | 4>(Math.floor(Math.random() * 4) + 1);
+                color = <"green" | "red" | "blue" | "yellow">(colors[math]);
+            } 
+
+            data.topCard.color = color;
+
+            message.channel.send(`${message.author.tag} played a ${card.name} and switched the color to ${color}. It is now ${message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).user.tag}'s turn`);
+
+        } else if (card.name.toLowerCase().includes("reverse")) { // Done
             special = true;
             
             if (data.users.length === 2) type = "skip";
@@ -374,7 +417,7 @@ export class DiscordUNO {
             settings.reverse = !settings.reverse;
             message.channel.send(`${message.author.tag} played a ${card.name}. It is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, type, settings, data)].id).tag}'s turn`);
             
-        } else if (card.name.toLowerCase().includes("skip")) {
+        } else if (card.name.toLowerCase().includes("skip")) { // Done
             type = "skip";
             special = true;
             message.channel.send(`${message.author.tag} skipped ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).tag} with a ${card.name}. It is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).tag}'s turn!`);
@@ -384,7 +427,7 @@ export class DiscordUNO {
         } else if (card.name.toLowerCase().includes("seven")) {
             type = "normal";
             special = true;
-        } else if (card.name.toLowerCase().includes("draw two")) {
+        } else if (card.name.toLowerCase().includes("draw two")) { // Done?
             type = "skip";
             special = true;
 
