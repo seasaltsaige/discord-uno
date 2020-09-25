@@ -173,6 +173,7 @@ export class DiscordUNO {
         if (!cardObject) return message.channel.send("You don't have that card in your hand!");
 
         const lastPlayer = foundGame.currentPlayer;
+        foundGame.topCard = cardObject;
         
         const special = await this.doSpecialCardAbility(message, cardObject, foundGame);
 
@@ -180,14 +181,13 @@ export class DiscordUNO {
             message.channel.send("Special Card Detected");
         } else {
 
-
             foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame);
             
             message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
         }
 
 
-        foundGame.topCard = cardObject;
+        
         foundGame.users[lastPlayer].hand.splice(foundGame.users[lastPlayer].hand.findIndex(crd => crd.name === cardObject.name), 1);
 
         this.storage.set(message.channel.id, foundGame);
@@ -255,7 +255,7 @@ export class DiscordUNO {
         const settings = this.settings.get(message.guild.id);
         let type: "normal" | "skip";
 
-        if (card.name.toLowerCase() === "wild draw four") {
+        if (card.name.toLowerCase() === "wild draw four") { // Done
             special = true;
             let color: "green" | "red" | "blue" | "yellow";
             const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`);
@@ -369,7 +369,7 @@ export class DiscordUNO {
             }
 
 
-        } else if (card.name.toLowerCase() === "wild") { // Not Done
+        } else if (card.name.toLowerCase() === "wild") { // Done
             type = "normal";
             special = true;
 
@@ -421,13 +421,54 @@ export class DiscordUNO {
             type = "skip";
             special = true;
             message.channel.send(`${message.author.tag} skipped ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).tag} with a ${card.name}. It is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).tag}'s turn!`);
-        } else if (card.name.toLowerCase().includes("zero")) {
+        } else if (card.name.toLowerCase().includes("zero")) { // Done
+            if (settings.zero) {
+                type = "normal";
+                special = true;
+
+
+                const userCount = data.users.length;
+                const reverse = settings.reverse;
+                const tempHand = [];
+                if (reverse) {
+                    for (let i = userCount - 1; i >= 0; i--) {
+                        tempHand.push(data.users[i].hand);
+                        if (tempHand.length > 1) {
+                            const toSet = tempHand.shift();
+                            data.users[i].hand = toSet;
+                        }
+
+                        if (i === 0) {
+                            const toSet = tempHand.pop();
+                            data.users[userCount - 1].hand = toSet;
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < userCount; i++) {
+                        tempHand.push(data.users[i].hand);
+                        if (tempHand.length > 1) {
+                            const toSet = tempHand.shift();
+                            data.users[i].hand = toSet;
+                        }
+
+                        if (i === userCount - 1) {
+                            const toSet = tempHand.pop();
+                            data.users[0].hand = toSet;
+                        }
+                    }
+                }
+
+                for (const u of data.users) {
+                    const nUser = message.guild.members.cache.get(u.id);
+                    nUser.send(`${message.author} played a ${card.name}. Your new hand has ${u.hand.length} cards.\n\n${u.hand.map(c => c.name).join(" | ")}.`);
+                }
+
+                message.channel.send(`${message.author.tag} played a ${card.name}. Everyone rotated their hand ${settings.reverse ? "counter clock-wise" : "clock-wise"}. It is now ${message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).user.tag}'s turn.`);
+            }
+        } else if (card.name.toLowerCase().includes("seven")) { // Not Done
             type = "normal";
             special = true;
-        } else if (card.name.toLowerCase().includes("seven")) {
-            type = "normal";
-            special = true;
-        } else if (card.name.toLowerCase().includes("draw two")) { // Done?
+        } else if (card.name.toLowerCase().includes("draw two")) { // Done
             type = "skip";
             special = true;
 
@@ -437,13 +478,15 @@ export class DiscordUNO {
 
             newCards.forEach(c => skippedUser.hand.push(c));
 
+            message.guild.members.cache.get(skippedUser.id).send(``);
+
             message.channel.send(`${message.author.tag} played a ${card.name} on ${this.client.users.cache.get(skippedUser.id).tag}. They drew two cards and it is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).tag}'s turn!`);
 
         }
 
         if (special) {
             data.currentPlayer = this.nextTurn(data.currentPlayer, type, settings, data);
-
+            console.log(data.topCard);
             this.settings.set(message.guild.id, settings);
             this.storage.set(message.channel.id, data);
         }
