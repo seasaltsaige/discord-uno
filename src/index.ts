@@ -1,4 +1,4 @@
-import { Client, Collection, Guild, Message, MessageReaction, Snowflake, User } from "discord.js";
+import { Client, Collection, Guild, Message, MessageEmbed, MessageReaction, Snowflake, User } from "discord.js";
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
@@ -482,6 +482,65 @@ export class DiscordUNO {
         } else if (card.name.toLowerCase().includes("seven")) { // Not Done
             type = "normal";
             special = true;
+
+            const players = data.users.length;
+            let reactions: Array<string>;
+            const playerEmojis = { 
+                "2": ['1️⃣'], 
+                "3": ['1️⃣', '2️⃣'], 
+                "4": ['1️⃣', '2️⃣', '3️⃣'], 
+                "5": ['1️⃣', '2️⃣', '3️⃣', '4️⃣'], 
+                "6": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'], 
+                "7": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'], 
+                "8": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'], 
+                "9": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'], 
+                "10": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+            };
+
+            for (const string of Object.keys(playerEmojis)) {
+                if (parseInt(string) === players) {
+                    //@ts-ignore
+                    reactions = playerEmojis[string];
+                }
+            };
+
+            const dataToChooseFrom = data.users.filter(user => user.id !== message.author.id);
+            const desciption = dataToChooseFrom.map(user => `${dataToChooseFrom.findIndex(u => u.id === user.id) + 1} - ${message.guild.members.cache.get(user.id).user.tag} has ${user.hand.length} cards`).join("\n");
+            const msg = await message.channel.send(`${message.author} who would you like to swap cards with?\n\n${desciption}`);
+
+            const filter = (reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) && message.author.id === user.id;
+
+            reactions.forEach(e => {
+                msg.react(e);
+            });
+
+            const response = await msg.awaitReactions(filter, { max: 1 });
+            const reaction = response.first();
+            let swapToUser: Player;
+            const emojis = { "1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6, "8️⃣": 7, "9️⃣": 8 };
+            if (reaction) {
+                const emoji = reaction.emoji.name;
+                //@ts-ignore
+                const num = <number>emojis[emoji];
+                swapToUser = data.users[num];
+            } else {
+                const math = Math.floor(Math.random() * dataToChooseFrom.length) + 1;
+                swapToUser = data.users[math];
+            }
+
+            let authorHand = data.users.find(user => user.id === message.author.id).hand;
+            let toSwapHand = swapToUser.hand;
+
+            const tempHand = authorHand;
+
+            authorHand = toSwapHand;
+            toSwapHand = tempHand;
+
+            const author = message.author;
+            const user = message.guild.members.cache.get(swapToUser.id).user;
+
+            author.send(`You swapped hands with ${user}! You now have ${authorHand.length} cards!\n\n${authorHand.map(c => c.name).join(" | ")}`);
+            user.send(`${author} swapped hands with you! You now have ${toSwapHand.length} cards!\n\n${toSwapHand.map(c => c.name).join(" | ")}`);
             
         } else if (card.name.toLowerCase().includes("draw two")) { // Done
             type = "skip";
@@ -493,7 +552,7 @@ export class DiscordUNO {
 
             newCards.forEach(c => skippedUser.hand.push(c));
 
-            message.guild.members.cache.get(skippedUser.id).send(``);
+            message.guild.members.cache.get(skippedUser.id).send(`Your new hand has ${skippedUser.hand.length} cards!\n\n${skippedUser.hand.map(c => c.name).join(" | ")}`);
 
             message.channel.send(`${message.author.tag} played a ${card.name} on ${this.client.users.cache.get(skippedUser.id).tag}. They drew two cards and it is now ${this.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "skip", settings, data)].id).tag}'s turn!`);
 
@@ -501,7 +560,6 @@ export class DiscordUNO {
 
         if (special) {
             data.currentPlayer = this.nextTurn(data.currentPlayer, type, settings, data);
-            console.log(data.topCard);
             this.settings.set(message.guild.id, settings);
             this.storage.set(message.channel.id, data);
         }
