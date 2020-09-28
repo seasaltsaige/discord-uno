@@ -179,20 +179,11 @@ export class DiscordUNO {
         
         const special = await this.doSpecialCardAbility(message, cardObject, foundGame);
 
-        if (special) {
-           
-        } else {
-
+        if (!special) {
             foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame);
             this.storage.set(message.channel.id, foundGame);
             message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
         }
-
-
-        
-     
-
-
 
         return this.client.users.cache.get(foundGame.users[lastPlayer].id).send(`Your new hand has ${foundGame.users[lastPlayer].hand.length} cards.\n${foundGame.users[lastPlayer].hand.map(crd => crd.name).join(" | ")}`);
     }
@@ -200,13 +191,13 @@ export class DiscordUNO {
      * To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
      */
     public viewTable(message: Message): Promise<Message> {
-        return message.channel.send("lol");
+        return message.channel.send("This method has not been developed yet... (Coming soon)");
     }
     /**
      * To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
      */
     public endGame(message: Message): Promise<Message> {
-        return message.channel.send("nice");
+        return message.channel.send("This method has not been developed yet... (Coming soon)");
     }
 
     /**
@@ -251,8 +242,7 @@ export class DiscordUNO {
      * @param set If you are turning it on or off.
      */
     public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
-        
-        return message.channel.send("Nice")
+        return message.channel.send("This method has not been developed yet... (Coming soon)");
     }
 
 
@@ -481,70 +471,71 @@ export class DiscordUNO {
 
                 message.channel.send(`${message.author.tag} played a ${card.name}. Everyone rotated their hand ${settings.reverse ? "counter clock-wise" : "clock-wise"}. It is now ${message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).user.tag}'s turn.`);
             }
-        } else if (card.name.toLowerCase().includes("seven")) { // Not Done
-            type = "normal";
-            special = true;
+        } else if (card.name.toLowerCase().includes("seven")) { // Done
+            if (settings.seven) {
+                type = "normal";
+                special = true;
 
-            const players = data.users.length;
-            let reactions: Array<string>;
-            const playerEmojis = { 
-                "2": ['1️⃣'], 
-                "3": ['1️⃣', '2️⃣'], 
-                "4": ['1️⃣', '2️⃣', '3️⃣'], 
-                "5": ['1️⃣', '2️⃣', '3️⃣', '4️⃣'], 
-                "6": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'], 
-                "7": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'], 
-                "8": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'], 
-                "9": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'], 
-                "10": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
-            };
+                const players = data.users.length;
+                let reactions: Array<string>;
+                const playerEmojis = { 
+                    "2": ['1️⃣'], 
+                    "3": ['1️⃣', '2️⃣'], 
+                    "4": ['1️⃣', '2️⃣', '3️⃣'], 
+                    "5": ['1️⃣', '2️⃣', '3️⃣', '4️⃣'], 
+                    "6": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'], 
+                    "7": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'], 
+                    "8": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'], 
+                    "9": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'], 
+                    "10": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
+                };
 
-            for (const string of Object.keys(playerEmojis)) {
-                if (parseInt(string) === players) {
+                for (const string of Object.keys(playerEmojis)) {
+                    if (parseInt(string) === players) {
+                        //@ts-ignore
+                        reactions = playerEmojis[string];
+                    }
+                };
+
+                const dataToChooseFrom = data.users.filter(user => user.id !== message.author.id);
+                const desciption = dataToChooseFrom.map(user => `${dataToChooseFrom.findIndex(u => u.id === user.id) + 1} - ${message.guild.members.cache.get(user.id).user.tag} has ${user.hand.length} cards`).join("\n");
+                const msg = await message.channel.send(`${message.author} who would you like to swap cards with?\n\n${desciption}`);
+
+                const filter = (reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) && message.author.id === user.id;
+
+                reactions.forEach(e => {
+                    msg.react(e);
+                });
+
+                const response = await msg.awaitReactions(filter, { max: 1 });
+                const reaction = response.first();
+                let swapToUser: Player;
+                const emojis = { "1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6, "8️⃣": 7, "9️⃣": 8 };
+                if (reaction) {
+                    const emoji = reaction.emoji.name;
                     //@ts-ignore
-                    reactions = playerEmojis[string];
+                    const num = <number>emojis[emoji];
+                    swapToUser = dataToChooseFrom[num];
+                } else {
+                    const math = Math.floor(Math.random() * dataToChooseFrom.length) + 1;
+                    swapToUser = dataToChooseFrom[math];
                 }
-            };
 
-            const dataToChooseFrom = data.users.filter(user => user.id !== message.author.id);
-            const desciption = dataToChooseFrom.map(user => `${dataToChooseFrom.findIndex(u => u.id === user.id) + 1} - ${message.guild.members.cache.get(user.id).user.tag} has ${user.hand.length} cards`).join("\n");
-            const msg = await message.channel.send(`${message.author} who would you like to swap cards with?\n\n${desciption}`);
+                const authorHand = data.users.find(user => user.id === message.author.id).hand;
+                const authorId = message.author.id;
 
-            const filter = (reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) && message.author.id === user.id;
+                const toSwapHand = data.users.find(user => user.id === swapToUser.id).hand;
+                const toSwapToId = swapToUser.id;
 
-            reactions.forEach(e => {
-                msg.react(e);
-            });
+                const author = message.author;
+                const user = message.guild.members.cache.get(swapToUser.id).user;
 
-            const response = await msg.awaitReactions(filter, { max: 1 });
-            const reaction = response.first();
-            let swapToUser: Player;
-            const emojis = { "1️⃣": 0, "2️⃣": 1, "3️⃣": 2, "4️⃣": 3, "5️⃣": 4, "6️⃣": 5, "7️⃣": 6, "8️⃣": 7, "9️⃣": 8 };
-            if (reaction) {
-                const emoji = reaction.emoji.name;
-                //@ts-ignore
-                const num = <number>emojis[emoji];
-                swapToUser = dataToChooseFrom[num];
-            } else {
-                const math = Math.floor(Math.random() * dataToChooseFrom.length) + 1;
-                swapToUser = dataToChooseFrom[math];
+                data.users.find(user => user.id === authorId).hand = toSwapHand;
+                data.users.find(u => u.id === toSwapToId).hand = authorHand;
+
+                author.send(`You swapped hands with ${user}! You now have ${data.users.find(u => u.id === author.id).hand.length} cards!\n\n${data.users.find(u => u.id === author.id).hand.map(c => c.name).join(" | ")}`);
+                user.send(`${author} swapped hands with you! You now have ${data.users.find(u => u.id === user.id).hand.length} cards!\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" | ")}`);
             }
-
-            const authorHand = data.users.find(user => user.id === message.author.id).hand;
-            const authorId = message.author.id;
-
-            const toSwapHand = data.users.find(user => user.id === swapToUser.id).hand;
-            const toSwapToId = swapToUser.id;
-
-            const author = message.author;
-            const user = message.guild.members.cache.get(swapToUser.id).user;
-
-            data.users.find(user => user.id === authorId).hand = toSwapHand;
-            data.users.find(u => u.id === toSwapToId).hand = authorHand;
-
-            author.send(`You swapped hands with ${user}! You now have ${data.users.find(u => u.id === author.id).hand.length} cards!\n\n${data.users.find(u => u.id === author.id).hand.map(c => c.name).join(" | ")}`);
-            user.send(`${author} swapped hands with you! You now have ${data.users.find(u => u.id === user.id).hand.length} cards!\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" | ")}`);
-            
         } else if (card.name.toLowerCase().includes("draw two")) { // Done
             type = "skip";
             special = true;
