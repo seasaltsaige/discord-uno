@@ -482,6 +482,7 @@ export class DiscordUNO {
         } else if (card.name.toLowerCase().includes("seven")) { // Not Done
             type = "normal";
             special = true;
+            
         } else if (card.name.toLowerCase().includes("draw two")) { // Done
             type = "skip";
             special = true;

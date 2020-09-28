@@ -12,14 +12,33 @@ npm install discord-uno
 ```
 ## Getting Started
 Make sure you have installed the latest stable version of [Node.js](https://nodejs.org/en/)
+### Using commonjs
 ```js
 const Discord = require("discord.js");
 const { DiscordUNO } = require("discord-uno");
 const client = new Discord.Client();
-let discordUNO;
+const discordUNO = new DiscordUNO(client);
 
 client.on("ready", () => {
-    discordUNO = new DiscordUNO(client);
+    console.log("Ready!");
+});
+
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!creategame") {
+        await discordUNO.createGame(message);
+    }
+});
+
+client.login("token");
+```
+### Using modules
+```js
+import { Client } from "discord.js";
+import { DiscordUNO } from "discord-uno";
+const client = new Client();
+const discordUNO = new DiscordUNO(client);
+
+client.on("ready", () => {
     console.log("Ready!");
 });
 
