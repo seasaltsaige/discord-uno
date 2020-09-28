@@ -159,6 +159,7 @@ export class DiscordUNO {
         if (!card) return message.channel.send("Please provide a valid card.");
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
+        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
 
         let jumpedIn = false;
         if (settings.jumpIns) {
@@ -170,27 +171,28 @@ export class DiscordUNO {
 
         if (!this.checkTop(foundGame.topCard, cardObject)) return message.channel.send(`You can't play that card! Either play a ${foundGame.topCard.value} Card or a ${foundGame.topCard.color} Card.`);
 
-        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
 
         const lastPlayer = foundGame.currentPlayer;
         foundGame.topCard = cardObject;
+
+        foundGame.users[lastPlayer].hand.splice(foundGame.users[lastPlayer].hand.findIndex(crd => crd.name === cardObject.name), 1);
         
         const special = await this.doSpecialCardAbility(message, cardObject, foundGame);
 
         if (special) {
-            message.channel.send("Special Card Detected");
+           
         } else {
 
             foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame);
-            
+            this.storage.set(message.channel.id, foundGame);
             message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
         }
 
 
         
-        foundGame.users[lastPlayer].hand.splice(foundGame.users[lastPlayer].hand.findIndex(crd => crd.name === cardObject.name), 1);
+     
 
-        this.storage.set(message.channel.id, foundGame);
+
 
         return this.client.users.cache.get(foundGame.users[lastPlayer].id).send(`Your new hand has ${foundGame.users[lastPlayer].hand.length} cards.\n${foundGame.users[lastPlayer].hand.map(crd => crd.name).join(" | ")}`);
     }
@@ -522,25 +524,26 @@ export class DiscordUNO {
                 const emoji = reaction.emoji.name;
                 //@ts-ignore
                 const num = <number>emojis[emoji];
-                swapToUser = data.users[num];
+                swapToUser = dataToChooseFrom[num];
             } else {
                 const math = Math.floor(Math.random() * dataToChooseFrom.length) + 1;
-                swapToUser = data.users[math];
+                swapToUser = dataToChooseFrom[math];
             }
 
-            let authorHand = data.users.find(user => user.id === message.author.id).hand;
-            let toSwapHand = swapToUser.hand;
+            const authorHand = data.users.find(user => user.id === message.author.id).hand;
+            const authorId = message.author.id;
 
-            const tempHand = authorHand;
-
-            authorHand = toSwapHand;
-            toSwapHand = tempHand;
+            const toSwapHand = data.users.find(user => user.id === swapToUser.id).hand;
+            const toSwapToId = swapToUser.id;
 
             const author = message.author;
             const user = message.guild.members.cache.get(swapToUser.id).user;
 
-            author.send(`You swapped hands with ${user}! You now have ${authorHand.length} cards!\n\n${authorHand.map(c => c.name).join(" | ")}`);
-            user.send(`${author} swapped hands with you! You now have ${toSwapHand.length} cards!\n\n${toSwapHand.map(c => c.name).join(" | ")}`);
+            data.users.find(user => user.id === authorId).hand = toSwapHand;
+            data.users.find(u => u.id === toSwapToId).hand = authorHand;
+
+            author.send(`You swapped hands with ${user}! You now have ${data.users.find(u => u.id === author.id).hand.length} cards!\n\n${data.users.find(u => u.id === author.id).hand.map(c => c.name).join(" | ")}`);
+            user.send(`${author} swapped hands with you! You now have ${data.users.find(u => u.id === user.id).hand.length} cards!\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" | ")}`);
             
         } else if (card.name.toLowerCase().includes("draw two")) { // Done
             type = "skip";
