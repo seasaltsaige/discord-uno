@@ -297,7 +297,7 @@ export class DiscordUNO {
         let foundSettings = this.settings.get(message.guild.id);
         if (!foundSettings) {
             this.settings.set(message.guild.id, {
-                jumpIns: false, // I am going to update this to reactions, just so its nicer on the end users experience
+                jumpIns: false,
                 reverse: false,
                 seven: false,
                 stacking: false,
