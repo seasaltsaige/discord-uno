@@ -178,6 +178,3 @@ client.on("message", async message => {
 });
 ```
 To view the current servers UNO! settings, call the viewSettings() method. This method has one parameter, which is the Message object. This method will return a message showing which customizable settings have been turned on or off.
-## Types
-### Setting
-Possible options are: `jumpIns, seven, stacking, wildChallenge, zero`. Any other string will throw an error.
