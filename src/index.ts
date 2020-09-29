@@ -236,12 +236,9 @@ export class DiscordUNO {
     }
 
     /**
-     * To update the servers UNO! settings, call the updateSettings() method. This method has three parameters, the first one is the Message object, the second one is which setting you are updating, the third one is if you are turning it on or off. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID)
-     * @param message The message object.
-     * @param setting Which setting you are updating.
-     * @param set If you are turning it on or off.
+     * To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID). It will send a message and react to the message, allowing you to change settings based on reactions.
      */
-    public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
+    public async updateSettings(message: Message): Promise<void> {
         let foundSettings = this.settings.get(message.guild.id);
         if (!foundSettings) {
             this.settings.set(message.guild.id, {
@@ -255,24 +252,55 @@ export class DiscordUNO {
             foundSettings = this.settings.get(message.guild.id);
         }
 
-        switch (setting) {
-            case "jumpIns":
-                foundSettings.jumpIns = set;
-            break;
-            case "seven":
-                foundSettings.seven = set;
-            break;
-            case "stacking":
-                foundSettings.stacking = set;
-            break;
-            case "wildChallenge":
-                foundSettings.wildChallenge = set;
-            break;
-            case "zero":
-                foundSettings.zero = set;
-            break;
-        }
-        return message.channel.send(`Successfully turned ${set ? "on" : "off"} the ${setting} setting.`);
+        let jumpIns = foundSettings.jumpIns;
+        let seven = foundSettings.seven;
+        let wildChallenge = foundSettings.wildChallenge;
+        let zero = foundSettings.zero;
+
+        const react = await message.channel.send(`**Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n**Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n**Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n**Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}\n\n**(React to toggle options)**`);
+
+        const emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "✅", "❌"];
+
+        emojis.forEach(e => react.react(e));
+
+        const filter = (reaction: MessageReaction, user: User) => emojis.includes(reaction.emoji.name) && message.author.id === user.id;
+
+        const collector = react.createReactionCollector(filter);
+
+        collector.on("collect", (reaction, user) => {
+            switch (reaction.emoji.name) {
+                case "1️⃣":
+                    jumpIns = !jumpIns;
+                break;
+                case "2️⃣":
+                    seven = !seven;
+                break;
+                case "3️⃣":
+                    wildChallenge = !wildChallenge;
+                break;
+                case "4️⃣":
+                    zero = !zero;
+                break;
+                case "✅":
+                    this.settings.set(message.guild.id, {
+                        jumpIns,
+                        reverse: foundSettings.reverse,
+                        seven,
+                        stacking: foundSettings.stacking,
+                        wildChallenge,
+                        zero,
+                    });
+                    react.edit(`Successfully updated UNO! settings for **${message.guild.name}**`);
+                    react.reactions.removeAll().catch(console.log);
+                return collector.stop();
+                case "❌":
+                    react.edit("Cancelled.");
+                    react.reactions.removeAll().catch(console.log);
+                return collector.stop("Cancelled");
+            }
+            react.edit(`**Jump Ins:** ${jumpIns ? "On" : "Off"}\n**Seven Swap:** ${seven ? "On" : "Off"}\n**Wild Challenging:** ${wildChallenge ? "On" : "Off"}\n**Zero Rotation:** ${zero ? "On" : "Off"}\n\n**(React to toggle options)**`)
+            reaction.users.remove(user.id);
+        });
     }
 
     /**

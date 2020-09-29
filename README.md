@@ -144,20 +144,12 @@ To view the current state of the game, call the viewTable() method. This method 
 ___
 ### updateSettings(message: Message, setting: [Setting](https://github.com/Maxisthemoose/discord-uno#setting), set: boolean): Promise\<Message\>
 ```js
-const prefix = "!";
 client.on("message", async message => {
-    if (message.content.toLowerCase().startsWith("!settings")) {
-        const args = message.content.slice(prefix.length).trim().split(/ +/g);
-
-        const setting = args[1];
-        const onOff = args[2];
-        const set = onOff === "on" ? true : onOff === "off" ? false : null;
-
-        await discordUNO.updateSetting(message, setting, set);
-    }
+    if (message.content.toLowerCase() === "!settings")
+        await discordUNO.updateSetting(message);
 });
 ```
-To update the servers UNO! settings, call the updateSettings() method. This method has three parameters, the first one is the Message object, the second one is which setting you are updating, the third one is if you are turning it on or off. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID)
+To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID). It will send a message and react to the message, allowing you to change settings based on reactions.
 ___
 ### viewSettings(message: Message): Promise\<Message\>
 ```js
