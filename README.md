@@ -116,6 +116,15 @@ client.on("message", async message => {
 ```
 To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
 ___
+### UNO(message: Message): Promise\<Message\>
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!play")
+        await discordUNO.UNO(message);
+});
+```
+To both protect yourself from UNO! Callouts or call someone else out for having one card left, call the UNO() method. This method accepts one parameter, which is the message object. This method will handle both protecting yourself from future UNO! callouts, and calling other users out that haven't been protected.
+___
 ### draw(message: Message): Promise\<Message\>
 ```js
 client.on("message", async message => {
@@ -143,7 +152,16 @@ client.on("message", async message => {
 ```
 To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
 ___
-### updateSettings(message: Message, setting: [Setting](https://github.com/Maxisthemoose/discord-uno#setting), set: boolean): Promise\<Message\>
+### viewWinners(message: Message): Promise\<Message\>
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!table")
+        await discordUNO.viewWinners(message);
+});
+```
+To view the current winners of the game (if there are any), call the viewWinners() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image identical to the one sent in the endGame() method. The only difference is this method can be called at any time to view the current standings of the game.
+___
+### updateSettings(message: Message): Promise\<Message\>
 ```js
 client.on("message", async message => {
     if (message.content.toLowerCase() === "!settings")

@@ -1,6 +1,6 @@
 {
   "name": "discord-uno",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create and handle an advanced version of UNO! In your very own JavaScript Discord Bot!",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -32,14 +32,17 @@
   },
   "homepage": "https://github.com/Maxisthemoose/discord-uno#readme",
   "author": "Maxisthemoose",
-  "license": "ISC",
+  "license": "Apache 2.0",
   "devDependencies": {
     "typescript": "^4.0.2"
   },
   "dependencies": {
     "@types/node": "^14.10.1",
     "@types/ws": "^7.2.6",
+    "canvas": "^2.6.1",
     "discord.js": "^12.3.1"
   },
-  "publishConfig": { "registry": "https://registry.npmjs.org/" }
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }

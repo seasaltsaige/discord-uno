@@ -1,16 +1,19 @@
-import { Client, Collection, Guild, Message, MessageEmbed, MessageReaction, Snowflake, User } from "discord.js";
+import Canvas from "canvas";
+import { Client, Collection, Guild, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, User } from "discord.js";
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
 import Settings from "./data/interfaces/Settings.interface";
 import Player from "./data/interfaces/User.interface";
+import Winners from "./data/interfaces/Winners.interface";
 
 export class DiscordUNO {
     constructor(
         public client: Client, 
         private storage = new Collection<Snowflake, GameData>(), 
         private gameCards = new Collection<Snowflake, typeof gameCardsArray>(),
-        private settings = new Collection<Snowflake, Settings>()
+        private settings = new Collection<Snowflake, Settings>(),
+        private winners = new Collection<Snowflake, Winners[]>(),
     ) { };
     
 
@@ -27,6 +30,10 @@ export class DiscordUNO {
                 wildChallenge: false,
                 zero: false,
             });
+        }
+
+        if (!this.winners.get(message.channel.id)) {
+            this.winners.set(message.channel.id, []);
         }
 
         this.gameCards.set(message.channel.id, gameCardsArray);
@@ -182,7 +189,15 @@ export class DiscordUNO {
         if (!special) {
             foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", settings, foundGame);
             this.storage.set(message.channel.id, foundGame);
-            message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
+            if (foundGame.users[lastPlayer].hand.length >= 1) message.channel.send(`${this.client.users.cache.get(foundGame.users[lastPlayer].id).tag} played a ${cardObject.name}. It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn.`);
+        }
+
+        if (foundGame.users[lastPlayer].hand.length < 1) {
+            const winners = this.winners.get(message.channel.id);
+            winners.push({ id: foundGame.users[lastPlayer].id });
+            this.winners.set(message.channel.id, winners);
+            foundGame.users.splice(foundGame.users.findIndex(u => u.id === foundGame.users[lastPlayer].id), 1);
+            return message.channel.send(`${message.author.id} went out with 0 cards! It is now ${this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn!`);
         }
 
         return this.client.users.cache.get(foundGame.users[lastPlayer].id).send(`Your new hand has ${foundGame.users[lastPlayer].hand.length} cards.\n${foundGame.users[lastPlayer].hand.map(crd => crd.name).join(" | ")}`);
@@ -196,8 +211,47 @@ export class DiscordUNO {
     /**
      * To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
      */
-    public endGame(message: Message): Promise<Message> {
+    public async endGame(message: Message): Promise<Message> { //doing
+
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("There is no game to end... Try making one instead!");
+        if (foundGame.creator !== message.author.id) return message.channel.send("You can't end this game! Only the creator can end this game!");
+        if (!foundGame.active) return message.channel.send("You can't end a game that hansn't started yet!");
+        const foundWinners = this.winners.get(message.channel.id);
+
+        const sortedUsers = foundGame.users.sort((a, b) => a.hand.length - b.hand.length);
+        for (const user of sortedUsers) {
+            foundWinners.push({ id: user.id });
+        }
+
+        this.winners.set(message.channel.id, foundWinners);
+
+        const winnersImage = await this.displayWinners(message, foundWinners);
+
+        return message.channel.send(`The game has been ended by ${message.author}! Scores have been calculated.`, { files: [
+            new MessageAttachment(winnersImage),
+        ] });
+    }
+    /**
+     * To both protect yourself from UNO! Callouts or call someone else out for having one card left, call the UNO() method. This method accepts one parameter, which is the message object. This method will handle both protecting yourself from future UNO! callouts, and calling other users out that haven't been protected.
+     */
+    public UNO(message: Message): Promise<Message> {
         return message.channel.send("This method has not been developed yet... (Coming soon)");
+    }
+
+    /**
+     * To view the current winners of the game (if there are any), call the viewWinners() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image identical to the one sent in the endGame() method. The only difference is this method can be called at any time to view the current standings of the game.
+     */
+    public async viewWinners(message: Message): Promise<Message> {
+        const foundWinners = this.winners.get(message.channel.id);
+        if (!foundWinners) return message.channel.send("There is no game in this channel to view the winners of!");
+        if (foundWinners.length < 1) return message.channel.send("No one has gone out yet!");
+
+        const standings = await this.displayWinners(message, foundWinners);
+
+        return message.channel.send("Here are the current UNO! Game standings!", { files: [
+            new MessageAttachment(standings),
+        ] });
     }
 
     /**
@@ -211,6 +265,7 @@ export class DiscordUNO {
         
         this.storage.delete(message.channel.id);
         this.gameCards.delete(message.channel.id);
+        this.winners.delete(message.channel.id);
 
         return message.channel.send(`Successfully closed ${message.channel}'s UNO! game.`);
     }
@@ -744,6 +799,76 @@ export class DiscordUNO {
             case "skip":
                 return (storage.users.length == 2 ? player : settings.reverse ? (player - 1) < 0 ? storage.users.length - 1 : player - 1 : (player + 1) > storage.users.length - 1 ? 0 : player + 1); 
         };
+    }
+    private async displayWinners(message: Message, foundWinners: Winners[]): Promise<Buffer> {
+        const canvas = Canvas.createCanvas(700, 500);
+        const ctx = canvas.getContext("2d");
+
+        ctx.fillStyle = "#282a2c";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#2e3033";
+        ctx.fillRect(0, 0, canvas.width, 25);
+        ctx.fillRect(0, 0, 25, canvas.height);
+        ctx.fillRect(canvas.width - 25, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, canvas.height - 25, canvas.width, canvas.height);
+
+        const podium = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/podium/podium.png");
+        ctx.drawImage(podium, canvas.width / 7 + 5, canvas.height / 2 - 50, 500, 190);
+
+        ctx.strokeStyle = '#282a2c';
+
+        let x1 = 110;
+        ctx.font = '15px manropebold';
+
+        for (let i = 0; i < foundWinners.length; i++) {
+            const winner = foundWinners[i];
+            const avatarURL = message.guild.members.cache.get(winner.id).user.displayAvatarURL({ format: 'png' });
+            const avatar = await Canvas.loadImage(avatarURL);
+
+            ctx.save();
+        switch (i) {
+            case 0:
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2 - 100, 50, 0, 2 * Math.PI, true);
+                ctx.stroke();
+                ctx.clip();
+                ctx.drawImage(avatar, canvas.width / 2 - 50, canvas.height / 2 - 150, 100, 100);
+                ctx.closePath();
+            break;
+            case 1:
+                ctx.beginPath();
+                ctx.arc((355 / 2) + 20, canvas.height / 2 - 50, 50, 0, 2 * Math.PI, true);
+                ctx.stroke();
+                ctx.clip();
+                ctx.drawImage(avatar, (355 / 2) + 20 - 50, canvas.height / 2 - 100, 100, 100)
+                ctx.closePath();
+            break;
+            case 2:
+                ctx.beginPath();
+                ctx.arc((canvas.width / 2) + (355 / 2) - 20, canvas.height / 2 - 35, 50, 0, 2 * Math.PI, true);
+                ctx.stroke();
+                ctx.clip();
+                ctx.drawImage(avatar, (canvas.width / 2) + (355 / 2) - 20 - 50, canvas.height / 2 - 35 - 50, 100, 100);
+                ctx.closePath();
+            break;
+            default:
+                const placement = i === 3 ? '4th' : i === 4 ? '5th' : i === 5 ? '6th' : i === 6 ? '7th' : i === 7 ? '8th' : i === 8 ? '9th' : '10th'
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.textAlign = 'center';
+                ctx.fillText(placement, x1, canvas.height - 70 - 25);
+                ctx.arc(x1, canvas.height - 60, 25, 0, Math.PI * 2, true);
+                ctx.stroke();
+                ctx.clip();
+                ctx.drawImage(avatar, x1 - 25, canvas.height - 60 - 25, 50, 50);
+                ctx.closePath();
+                x1 += 80;
+            break;
+        }
+        ctx.restore();
+
+        }
+        return canvas.toBuffer("image/png");
     }
 }
 
