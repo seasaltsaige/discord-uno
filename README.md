@@ -11,6 +11,7 @@ Discord-UNO is meant to be an easy to use, fast, and efficient way to create and
 npm install discord-uno
 ```
 ## Getting Started
+##### Please note, this is an early version of discord-uno, expect bugs. Some methods have not been completed. You can report bugs to me at either `That Duck Max#8153` on Discord or email me at `oriontothemax@gmail.com`
 Make sure you have installed the latest stable version of [Node.js](https://nodejs.org/en/)
 ### Using commonjs
 ```js
