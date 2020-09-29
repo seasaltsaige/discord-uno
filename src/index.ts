@@ -242,6 +242,11 @@ export class DiscordUNO {
      * @param set If you are turning it on or off.
      */
     public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
+        switch (setting) {
+            case "jumpIns":
+            
+            break;
+        }
         return message.channel.send("This method has not been developed yet... (Coming soon)");
     }
 
