@@ -140,7 +140,7 @@ export class DiscordUNO {
 
         for (const user of foundGame.users) {
             const userHand = user.hand;
-            (<User>this.client.users.cache.get(user.id)).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+            this.client.users.cache.get(user.id).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
         };
 
         return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
@@ -242,12 +242,60 @@ export class DiscordUNO {
      * @param set If you are turning it on or off.
      */
     public updateSettings(message: Message, setting: "jumpIns" | "seven" | "stacking" | "wildChallenge" | "zero", set: boolean): Promise<Message> {
+        let foundSettings = this.settings.get(message.guild.id);
+        if (!foundSettings) {
+            this.settings.set(message.guild.id, {
+                jumpIns: false, // I am going to update this to reactions, just so its nicer on the end users experience
+                reverse: false,
+                seven: false,
+                stacking: false,
+                wildChallenge: false,
+                zero: false,
+            });
+            foundSettings = this.settings.get(message.guild.id);
+        }
+
         switch (setting) {
             case "jumpIns":
-            
+                foundSettings.jumpIns = set;
+            break;
+            case "seven":
+                foundSettings.seven = set;
+            break;
+            case "stacking":
+                foundSettings.stacking = set;
+            break;
+            case "wildChallenge":
+                foundSettings.wildChallenge = set;
+            break;
+            case "zero":
+                foundSettings.zero = set;
             break;
         }
-        return message.channel.send("This method has not been developed yet... (Coming soon)");
+        return message.channel.send(`Successfully turned ${set ? "on" : "off"} the ${setting} setting.`);
+    }
+
+    /**
+     * To view the current servers UNO! settings, call the viewSettings() method. This method has one parameter, which is the Message object. This method will return a message showing which customizable settings have been turned on or off.
+     */
+    public viewSettings(message: Message): Promise<Message> {
+
+        let foundSettings = this.settings.get(message.guild.id);
+        if (!foundSettings) {
+            this.settings.set(message.guild.id, {
+                jumpIns: false,
+                reverse: false,
+                seven: false,
+                stacking: false,
+                wildChallenge: false,
+                zero: false,
+            });
+            foundSettings = this.settings.get(message.guild.id);
+        }
+
+        const msg = `**Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n**Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n**Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n**Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}`;
+
+        return message.channel.send(msg);
     }
 
 

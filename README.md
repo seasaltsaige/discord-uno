@@ -158,6 +158,15 @@ client.on("message", async message => {
 });
 ```
 To update the servers UNO! settings, call the updateSettings() method. This method has three parameters, the first one is the Message object, the second one is which setting you are updating, the third one is if you are turning it on or off. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID)
+___
+### viewSettings(message: Message): Promise\<Message\>
+```js
+client.on("message", async message => {
+    if (message.content.toLowerCase() === "!viewsettings") 
+        await discordUNO.viewSettings(message);
+});
+```
+To view the current servers UNO! settings, call the viewSettings() method. This method has one parameter, which is the Message object. This method will return a message showing which customizable settings have been turned on or off.
 ## Types
 ### Setting
 Possible options are: `jumpIns, seven, stacking, wildChallenge, zero`. Any other string will throw an error.
