@@ -126,6 +126,7 @@ export class DiscordUNO {
     public viewCards(message: Message): Promise<Message> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game going on in this channel to view cards in. Try creating one instead.");
+        if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
         const userHand = (<Player>foundGame.users.find(user => user.id === message.author.id)).hand;
         message.channel.send(`${message.author}, check your DMs!`);
         return message.author.send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`);
@@ -159,6 +160,7 @@ export class DiscordUNO {
 
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to play a card in! Try making a new game instead.");
+        if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
         const settings = this.settings.get(message.guild.id);
 
         const user = foundGame.users[foundGame.currentPlayer];
@@ -232,11 +234,48 @@ export class DiscordUNO {
             new MessageAttachment(winnersImage),
         ] });
     }
+
     /**
      * To both protect yourself from UNO! Callouts or call someone else out for having one card left, call the UNO() method. This method accepts one parameter, which is the message object. This method will handle both protecting yourself from future UNO! callouts, and calling other users out that haven't been protected.
      */
     public UNO(message: Message): Promise<Message> {
-        return message.channel.send("This method has not been developed yet... (Coming soon)");
+
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("There is no game in this channel to call people out in!");
+        if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
+
+        const user = message.mentions.users.first() || message.author;
+
+        if (user.id === message.author.id) {
+            if (foundGame.users.find(u => u.id === user.id).safe) return message.channel.send("You are already safe, did you mean to mention someone?");
+            if (foundGame.users.find(u => u.id === user.id).hand.length > 1) return message.channel.send("You can't use this command when you have more than one card left in your hand!");
+            foundGame.users.find(u => u.id === user.id).safe = true;
+            this.storage.set(message.channel.id, foundGame);
+            return message.channel.send(`${user.tag}, you are now safe!`);
+        } else {
+            if (user.bot) return message.channel.send("Bots can't play this game silly.");
+            if (!foundGame.users.some(u => u.id === user.id)) return message.channel.send("That user isn't in the game silly.");
+            const playerData = foundGame.users.find(u => u.id === user.id);
+            const authorData = foundGame.users.find(u => u.id === message.author.id);
+
+            const newCards = this.createCards(message, 2, false);
+
+            if (playerData.safe) {
+                return message.channel.send(`OOPS! Looks like that person was safe ${message.author}!`);
+            } else {
+                if (playerData.hand.length === 1) {
+                    newCards.forEach(c => playerData.hand.push(c));
+                    this.storage.set(message.channel.id, foundGame);
+                    user.send(`Looks like you were called out on 1 card left! You drew 2 cards. Your new hand has ${playerData.hand.length} cards.\n\n${playerData.hand.map(c => c.name).join(" | ")}`);
+                    return message.channel.send(`${user.tag} was called out by ${message.author.tag} on 1 card left! They drew 2 more cards.`);
+                } else {
+                    newCards.forEach(c => authorData.hand.push(c));
+                    this.storage.set(message.channel.id, foundGame);
+                    message.author.send(`Oops! Looks like that person didn't have 1 card left! You drew 2 cards. Your new hand has ${authorData.hand.length} cards.\n\n${authorData.hand.map(c => c.name).join(" | ")}`);
+                    return message.channel.send(`OOPS! Looks like that person didn't have 1 card left! ${message.author.tag} drew 2 cards!`);
+                }
+            }
+        }
     }
 
     /**
