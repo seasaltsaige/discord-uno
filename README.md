@@ -110,7 +110,7 @@ ___
 ### playCard(message: Message): Promise\<Message\>
 ```js
 client.on("message", async message => {
-    if (message.content.toLowerCase() === "!play")
+    if (message.content.toLowerCase().startsWith("!play"))
         await discordUNO.playCard(message);
 });
 ```
@@ -119,7 +119,7 @@ ___
 ### UNO(message: Message): Promise\<Message\>
 ```js
 client.on("message", async message => {
-    if (message.content.toLowerCase() === "!play")
+    if (message.content.toLowerCase().startsWith("!UNO"))
         await discordUNO.UNO(message);
 });
 ```
@@ -155,7 +155,7 @@ ___
 ### viewWinners(message: Message): Promise\<Message\>
 ```js
 client.on("message", async message => {
-    if (message.content.toLowerCase() === "!table")
+    if (message.content.toLowerCase() === "!viewwinners")
         await discordUNO.viewWinners(message);
 });
 ```
