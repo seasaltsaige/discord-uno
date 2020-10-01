@@ -494,7 +494,7 @@ export class DiscordUNO {
     }
 
     /**
-     * To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID). It will send a message and react to the message, allowing you to change settings based on reactions.
+     * To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Channel ID). It will send a message and react to the message, allowing you to change settings based on reactions.
      */
     public async updateSettings(message: Message): Promise<void> {
         let foundSettings = this.settings.get(message.channel.id);
