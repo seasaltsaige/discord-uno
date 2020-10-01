@@ -6,6 +6,9 @@ import GameData from "./data/interfaces/GameData.interface";
 import Settings from "./data/interfaces/Settings.interface";
 import Player from "./data/interfaces/User.interface";
 import Winners from "./data/interfaces/Winners.interface";
+import axios from "axios";
+
+const NPMPackage = require("./package.json");
 
 export class DiscordUNO {
     constructor(
@@ -14,6 +17,25 @@ export class DiscordUNO {
         private gameCards = new Collection<Snowflake, typeof gameCardsArray>(),
         private settings = new Collection<Snowflake, Settings>(),
         private winners = new Collection<Snowflake, Winners[]>(),
+        public version = {
+            current: NPMPackage.version,
+            updates: async function(message?: Message) {
+                const repsonse = await axios.get("https://registry.npmjs.org/discord-uno");
+                const data = repsonse.data;
+                const latest = data["dist-tags"].latest.split(".");
+                const curr = NPMPackage.version.split(".");
+                let update = false;
+                if (parseInt(latest[0]) > parseInt(curr[0])) update = true;
+                else if (parseInt(latest[1]) > parseInt(curr[1])) update = true;
+                else if (parseInt(latest[2]) > parseInt(curr[2])) update = true;
+                if (message) {
+                    if (update) return message.channel.send("There is an update availiable! Consider checking it out!");
+                    else return message.channel.send("You are up to date!");
+                } else {
+                    if (update) return "There is an update availiable for discord-uno! Consider checking it out!"
+                }
+            }
+        }
     ) { };
     
 
@@ -21,8 +43,8 @@ export class DiscordUNO {
      * To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
      */
     public async createGame(message: Message): Promise<Message> {
-        if (!this.settings.get(message.guild.id)) {
-            this.settings.set(message.guild.id, {
+        if (!this.settings.get(message.channel.id)) {
+            this.settings.set(message.channel.id, {
                 jumpIns: false,
                 reverse: false,
                 seven: false,
@@ -161,7 +183,7 @@ export class DiscordUNO {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to play a card in! Try making a new game instead.");
         if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
-        const settings = this.settings.get(message.guild.id);
+        const settings = this.settings.get(message.channel.id);
 
         const user = foundGame.users[foundGame.currentPlayer];
         const card = message.content.split(" ").slice(1).join(" ");
@@ -212,7 +234,8 @@ export class DiscordUNO {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game currently in this channel! Try creating one instead.");
         if (foundGame.users.length < 2) return message.channel.send("There are too few players in the game to view the current table status!");
-        
+        const settings = this.settings.get(message.channel.id);
+
         Canvas.registerFont('./node_modules/discord-uno/src/data/assets/fonts/Manrope-Bold.ttf', {
             family: 'manropebold'
         });
@@ -255,7 +278,7 @@ export class DiscordUNO {
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff';
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < foundGame.users.length; i++) {
             ctx.font = `40px manropebold`;
             ctx.save()
 
@@ -265,7 +288,7 @@ export class DiscordUNO {
             ctx.strokeStyle = '#ffffff';
             ctx.stroke();
             ctx.clip();
-            const image = foundGame.users[i] ? await Canvas.loadImage(message.guild.members.cache.get(foundGame.users[i].id).user.displayAvatarURL({ format: 'png' })) : await Canvas.loadImage("https://cdn.discordapp.com/avatars/408080307603111936/fdb086b732e630a22095de8b26fea242.png");;
+            const image = await Canvas.loadImage(message.guild.members.cache.get(foundGame.users[i].id).user.displayAvatarURL({ format: 'png' }));
 
             ctx.drawImage(image, x - image.width / 2 + 4, y - image.height / 2 + 4, 120, 120)
             ctx.closePath();
@@ -276,20 +299,20 @@ export class DiscordUNO {
                 ctx.save();
                 const crown = await Canvas.loadImage('https://discordapp.com/assets/98fe9cdec2bf8ded782a7bf1e302b664.svg');
                 ctx.translate(x - crown.width / 2 + 87, y - crown.height / 2 - 103);
-                ctx.rotate(45 * Math.PI / 180);
-                ctx.drawImage(crown, 0, 0, 60, 60)
+                ctx.rotate(42 * Math.PI / 180);
+                ctx.drawImage(crown, -5, 20, 60, 60)
                 ctx.restore();
             }
             if (counter < 5) {
                 const cardImage = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/deck/Deck.png");
                 ctx.drawImage(cardImage, x - cardImage.width / 2 + 60, y - 40, 55.2, 80);
                 ctx.font = `70px manropebold`;
-                ctx.fillText(foundGame.users[i] ? foundGame.users[i].hand.length.toString() : "7", x - 180, y + 25)
+                ctx.fillText(foundGame.users[i] ? foundGame.users[i].hand.length.toString() : "X", x - 180, y + 25)
             } else {
                 const cardImage = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/deck/Deck.png");
                 ctx.drawImage(cardImage, x + cardImage.width / 2 - 60, y - 40, 55.2, 80);
                 ctx.font = `70px manropebold`;
-                ctx.fillText(foundGame.users[i] ? foundGame.users[i].hand.length.toString() : "7", x + 105, y + 25)
+                ctx.fillText(foundGame.users[i] ? foundGame.users[i].hand.length.toString() : "X", x + 105, y + 25)
             }
             switch (counter) {
                 case 0:
@@ -331,6 +354,20 @@ export class DiscordUNO {
             }
             counter++;
         }
+
+        
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `70px manropebold`;
+            ctx.textAlign = "left";
+            const width = ctx.measureText("Rotation: ").width;
+            ctx.fillText("Rotation: ", canvas.width - 200 - width - 30, canvas.height - 50);
+            const IMAGE = await Canvas.loadImage(settings.reverse ? './node_modules/discord-uno/src/data/assets/rotation/counter_clock-wise.png' : './node_modules/discord-uno/src/data/assets/rotation/clock-wise.png');
+            ctx.drawImage(IMAGE, canvas.width - 200, canvas.height - 120, 100, 87.36);
+
+            ctx.fillText(`Turn: `, 120, canvas.height - 50);
+            ctx.fillStyle = '#ffffff';
+            const WIDTH = ctx.measureText('Turn: ').width
+            ctx.fillText(`${message.guild.members.cache.get(foundGame.users[foundGame.currentPlayer].id).user.username}`, WIDTH + 105 + 10, canvas.height - 50)
 
         return message.channel.send("Current Game State", { files: [
             new MessageAttachment(canvas.toBuffer("image/png")),
@@ -460,9 +497,9 @@ export class DiscordUNO {
      * To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID). It will send a message and react to the message, allowing you to change settings based on reactions.
      */
     public async updateSettings(message: Message): Promise<void> {
-        let foundSettings = this.settings.get(message.guild.id);
+        let foundSettings = this.settings.get(message.channel.id);
         if (!foundSettings) {
-            this.settings.set(message.guild.id, {
+            this.settings.set(message.channel.id, {
                 jumpIns: false,
                 reverse: false,
                 seven: false,
@@ -470,7 +507,7 @@ export class DiscordUNO {
                 wildChallenge: false,
                 zero: false,
             });
-            foundSettings = this.settings.get(message.guild.id);
+            foundSettings = this.settings.get(message.channel.id);
         }
 
         let jumpIns = foundSettings.jumpIns;
@@ -503,7 +540,7 @@ export class DiscordUNO {
                     zero = !zero;
                 break;
                 case "✅":
-                    this.settings.set(message.guild.id, {
+                    this.settings.set(message.channel.id, {
                         jumpIns,
                         reverse: foundSettings.reverse,
                         seven,
@@ -529,9 +566,9 @@ export class DiscordUNO {
      */
     public viewSettings(message: Message): Promise<Message> {
 
-        let foundSettings = this.settings.get(message.guild.id);
+        let foundSettings = this.settings.get(message.channel.id);
         if (!foundSettings) {
-            this.settings.set(message.guild.id, {
+            this.settings.set(message.channel.id, {
                 jumpIns: false,
                 reverse: false,
                 seven: false,
@@ -539,7 +576,7 @@ export class DiscordUNO {
                 wildChallenge: false,
                 zero: false,
             });
-            foundSettings = this.settings.get(message.guild.id);
+            foundSettings = this.settings.get(message.channel.id);
         }
 
         const msg = `**Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n**Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n**Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n**Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}`;
@@ -560,7 +597,7 @@ export class DiscordUNO {
     private async doSpecialCardAbility(message: Message, card: Card, data: GameData): Promise<boolean> {
 
         let special = false;
-        const settings = this.settings.get(message.guild.id);
+        const settings = this.settings.get(message.channel.id);
         let type: "normal" | "skip";
 
         if (card.name.toLowerCase() === "wild draw four") { // Done
@@ -856,7 +893,7 @@ export class DiscordUNO {
 
         if (special) {
             data.currentPlayer = this.nextTurn(data.currentPlayer, type, settings, data);
-            this.settings.set(message.guild.id, settings);
+            this.settings.set(message.channel.id, settings);
             this.storage.set(message.channel.id, data);
         }
 
