@@ -53,8 +53,8 @@ export class DiscordUNO {
             currentPlayer: 1,
         });
 
-        return message.channel.send(`${message.author} created an UNO! game! You can now join the game!`);
 
+        return message.channel.send(`${message.author} created an UNO! game! You can now join the game!`);
     };
 
     /**
@@ -86,7 +86,7 @@ export class DiscordUNO {
 
             return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>this.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
         }
-
+        // Note to self use { embed: EmbedName } for embed messages, discord is weird lmao
         this.storage.set(message.channel.id, foundGame);
             
         return message.channel.send(`${message.author} joined ${message.channel}'s UNO! game!`);
@@ -207,13 +207,139 @@ export class DiscordUNO {
     /**
      * To view the current state of the game, call the viewTable() method. This method has one parameter, which is the Message object. This method will handle creating and sending an image to the channel with all the current information of the game. Including rotation, whos turn it is, how many cards each user has, whos in the game, and the top card of the pile.
      */
-    public viewTable(message: Message): Promise<Message> {
-        return message.channel.send("This method has not been developed yet... (Coming soon)");
+    public async viewTable(message: Message): Promise<Message> {
+
+        const foundGame = this.storage.get(message.channel.id);
+        if (!foundGame) return message.channel.send("There is no game currently in this channel! Try creating one instead.");
+        if (foundGame.users.length < 2) return message.channel.send("There are too few players in the game to view the current table status!");
+        
+        Canvas.registerFont('./node_modules/discord-uno/src/data/assets/fonts/Manrope-Bold.ttf', {
+            family: 'manropebold'
+        });
+
+        Canvas.registerFont('./node_modules/discord-uno/src/data/assets/fonts/Manrope-Regular.ttf', {
+            family: 'manroperegular'
+        });
+
+        const canvas = Canvas.createCanvas(2000, 1000);
+        const ctx = canvas.getContext("2d");
+
+        const random = Math.floor(Math.random() * 5); // Random from 0 - 4
+        const fileName = `Table_${random}.png`;
+        const image = await Canvas.loadImage(`./node_modules/discord-uno/src/data/assets/cards/table/${fileName}`);
+
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        const table = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/UNO_Table.png");
+
+        ctx.drawImage(table, (canvas.width / 4) - 100, (canvas.height / 3) - 100, (canvas.width / 2) + 200, (canvas.height / 3) + 200);
+
+
+        const TopCard = await Canvas.loadImage(foundGame.topCard.image);
+        ctx.drawImage(TopCard, canvas.width / 2 + 35, canvas.height / 2 - TopCard.height / 5, 120.75, 175);
+    
+    
+        const bcard = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/deck/Deck.png");
+    
+        let x1 = (canvas.width / 2) - (120.75 + 28)
+        let y1 = ((canvas.height / 2) - (TopCard.height / 5)) + 2
+        for (let i = 0; i < 3; i++) {
+            ctx.drawImage(bcard, x1, y1, 120.75, 175);
+            x1 += 12
+            y1 -= 12
+        }
+
+        let x = 330;
+        let y = canvas.height / 2;
+        let counter = 0;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff';
+
+        for (let i = 0; i < 10; i++) {
+            ctx.font = `40px manropebold`;
+            ctx.save()
+
+            ctx.beginPath();
+            ctx.arc(x, y, 60, 0, 2 * Math.PI, true)
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+            ctx.clip();
+            const image = foundGame.users[i] ? await Canvas.loadImage(message.guild.members.cache.get(foundGame.users[i].id).user.displayAvatarURL({ format: 'png' })) : await Canvas.loadImage("https://cdn.discordapp.com/avatars/408080307603111936/fdb086b732e630a22095de8b26fea242.png");;
+
+            ctx.drawImage(image, x - image.width / 2 + 4, y - image.height / 2 + 4, 120, 120)
+            ctx.closePath();
+            ctx.restore();
+
+            if (foundGame.users[i] && foundGame.users[i].id === foundGame.users[foundGame.currentPlayer].id) {
+                ctx.fillStyle = '#ffffff';
+                ctx.save();
+                const crown = await Canvas.loadImage('https://discordapp.com/assets/98fe9cdec2bf8ded782a7bf1e302b664.svg');
+                ctx.translate(x - crown.width / 2 + 87, y - crown.height / 2 - 103);
+                ctx.rotate(45 * Math.PI / 180);
+                ctx.drawImage(crown, 0, 0, 60, 60)
+                ctx.restore();
+            }
+            if (counter < 5) {
+                const cardImage = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/deck/Deck.png");
+                ctx.drawImage(cardImage, x - cardImage.width / 2 + 60, y - 40, 55.2, 80);
+                ctx.font = `70px manropebold`;
+                ctx.fillText(foundGame.users[i] ? foundGame.users[i].hand.length.toString() : "7", x - 180, y + 25)
+            } else {
+                const cardImage = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/deck/Deck.png");
+                ctx.drawImage(cardImage, x + cardImage.width / 2 - 60, y - 40, 55.2, 80);
+                ctx.font = `70px manropebold`;
+                ctx.fillText(foundGame.users[i] ? foundGame.users[i].hand.length.toString() : "7", x + 105, y + 25)
+            }
+            switch (counter) {
+                case 0:
+                    x = x + 150;
+                    y = y - 300
+                break;
+                case 1:
+                    x = x + 350
+                    y = y - 30
+                break;
+                case 2:
+                    x = x + 370
+                    y = y;
+                break;
+                case 3:
+                    x = x + 350
+                    y = y + 30
+                break;
+                case 4:
+                    x = x + 120
+                    y = y + 300
+                break;
+                case 5:
+                    x = x - 120
+                    y = y + 300
+                break;
+                case 6:
+                    x = x - 350
+                    y = y + 30
+                break;
+                case 7:
+                    x = x - 370
+                    y = y;
+                break;
+                case 8:
+                    x = x - 350
+                    y = y - 30
+                break;
+            }
+            counter++;
+        }
+
+        return message.channel.send("Current Game State", { files: [
+            new MessageAttachment(canvas.toBuffer("image/png")),
+        ] });
     }
     /**
      * To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
      */
-    public async endGame(message: Message): Promise<Message> { //doing
+    public async endGame(message: Message): Promise<Message> {
 
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to end... Try making one instead!");
@@ -223,9 +349,10 @@ export class DiscordUNO {
 
         const sortedUsers = foundGame.users.sort((a, b) => a.hand.length - b.hand.length);
         for (const user of sortedUsers) {
+            foundGame.users.splice(foundGame.users.findIndex(u => u.id === user.id), 1);
             foundWinners.push({ id: user.id });
         }
-
+        this.storage.set(message.channel.id, foundGame);
         this.winners.set(message.channel.id, foundWinners);
 
         const winnersImage = await this.displayWinners(message, foundWinners);

@@ -7,7 +7,7 @@ export const cards = {
         value: 0,
         count: 1,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_0.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_0.png'
         },
         {
         name: 'Red One',
@@ -15,7 +15,7 @@ export const cards = {
         value: 1,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_1.png'
+        image: './node_modules/discord-uno/src/data/assets/cardsred/Red_1.png'
         },
         {
         name: 'Red Two',
@@ -23,7 +23,7 @@ export const cards = {
         value: 2,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_2.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_2.png'
         },
         {
         name: 'Red Three',
@@ -31,7 +31,7 @@ export const cards = {
         value: 3,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_3.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_3.png'
         },
         {
         name: 'Red Four',
@@ -39,7 +39,7 @@ export const cards = {
         value: 4,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_4.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_4.png'
         },
         {
         name: 'Red Five',
@@ -47,7 +47,7 @@ export const cards = {
         value: 5,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_5.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_5.png'
         },
         {
         name: 'Red Six',
@@ -55,7 +55,7 @@ export const cards = {
         value: 6,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_6.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_6.png'
         },
         {
         name: 'Red Seven',
@@ -63,7 +63,7 @@ export const cards = {
         value: 7,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_7.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_7.png'
         },
         {
         name: 'Red Eight',
@@ -71,7 +71,7 @@ export const cards = {
         value: 8,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_8.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_8.png'
         }, 
         {
         name: 'Red Nine',
@@ -79,7 +79,7 @@ export const cards = {
         value: 9,
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_9.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_9.png'
         },
         {
         name: 'Red Skip',
@@ -87,7 +87,7 @@ export const cards = {
         value: 'Skip',
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_Skip.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_Skip.png'
         },
         {
         name: 'Red Reverse',
@@ -95,7 +95,7 @@ export const cards = {
         value: 'Reverse',
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_Reverse.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_Reverse.png'
         }, 
         {
         name: 'Red Draw Two',
@@ -103,7 +103,7 @@ export const cards = {
         value: 'Draw Two',
         count: 2,
         inPlay: 0,
-        image: './src/assets/UNOcards/red/Red_Draw.png'
+        image: './node_modules/discord-uno/src/data/assets/cards/red/Red_Draw.png'
         },
     ],
     // Yellow Cards
@@ -114,7 +114,7 @@ export const cards = {
             value: 0,
             count: 1,
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_0.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_0.png'
         },
         {
             name: 'Yellow One',
@@ -123,7 +123,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_1.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_1.png'
         },
         {
             name: 'Yellow Two',
@@ -132,7 +132,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_2.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_2.png'
         },
         {
             name: 'Yellow Three',
@@ -141,7 +141,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_3.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_3.png'
         },
         {
             name: 'Yellow Four',
@@ -150,7 +150,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_4.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_4.png'
         },
         {
             name: 'Yellow Five',
@@ -159,7 +159,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_5.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_5.png'
         },
         {
             name: 'Yellow Six',
@@ -168,7 +168,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_6.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_6.png'
         },
         {
             name: 'Yellow Seven',
@@ -176,7 +176,7 @@ export const cards = {
             value: 7,
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_7.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_7.png'
         },
         {
             name: 'Yellow Eight',
@@ -185,7 +185,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_8.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_8.png'
         }, 
         {
             name: 'Yellow Nine',
@@ -194,7 +194,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_9.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_9.png'
         },
         {
             name: 'Yellow Skip',
@@ -202,7 +202,7 @@ export const cards = {
             value: 'Skip',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_Skip.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_Skip.png'
         },
         {
             name: 'Yellow Reverse',
@@ -210,7 +210,7 @@ export const cards = {
             value: "Reverse",
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_Reverse.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_Reverse.png'
         }, 
         {
             name: 'Yellow Draw Two',
@@ -218,7 +218,7 @@ export const cards = {
             value: 'Draw Two',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/yellow/Yellow_Draw.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/yellow/Yellow_Draw.png'
         },
     ],
     // Green Cards
@@ -229,7 +229,7 @@ export const cards = {
             value: 0,
             count: 1,
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_0.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_0.png'
         },
         {
             name: 'Green One',
@@ -238,7 +238,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_1.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_1.png'
         },
         {
             name: 'Green Two',
@@ -247,7 +247,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_2.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_2.png'
         },
         {
             name: 'Green Three',
@@ -256,7 +256,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_3.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_3.png'
         },
         {
             name: 'Green Four',
@@ -265,7 +265,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_4.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_4.png'
         },
         {
             name: 'Green Five',
@@ -274,7 +274,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_5.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_5.png'
         },
         {
             name: 'Green Six',
@@ -283,7 +283,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_6.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_6.png'
         },
         {
             name: 'Green Seven',
@@ -291,7 +291,7 @@ export const cards = {
             value: 7,
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_7.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_7.png'
         },
         {
             name: 'Green Eight',
@@ -300,7 +300,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_8.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_8.png'
         }, 
         {
             name: 'Green Nine',
@@ -309,7 +309,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_9.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_9.png'
         },
         {
             name: 'Green Skip',
@@ -317,7 +317,7 @@ export const cards = {
             value: 'Skip',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_Skip.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_Skip.png'
         },
         {
             name: 'Green Reverse',
@@ -325,7 +325,7 @@ export const cards = {
             value: 'Reverse',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_Reverse.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_Reverse.png'
         }, 
         {
             name: 'Green Draw Two',
@@ -333,7 +333,7 @@ export const cards = {
             value: 'Draw Two',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/green/Green_Draw.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/green/Green_Draw.png'
         },
     ],
     // Blue Cards
@@ -345,7 +345,7 @@ export const cards = {
             value: 0,
             count: 1,
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_0.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_0.png'
         },
         {
             name: 'Blue One',
@@ -354,7 +354,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_1.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_1.png'
         },
         {
             name: 'Blue Two',
@@ -363,7 +363,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_2.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_2.png'
         },
         {
             name: 'Blue Three',
@@ -372,7 +372,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_3.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_3.png'
         },
         {
             name: 'Blue Four',
@@ -381,7 +381,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_4.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_4.png'
         },
         {
             name: 'Blue Five',
@@ -390,7 +390,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_5.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_5.png'
         },
         {
             name: 'Blue Six',
@@ -399,7 +399,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_6.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_6.png'
         },
         {
             name: 'Blue Seven',
@@ -407,7 +407,7 @@ export const cards = {
             value: 7,
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_7.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_7.png'
         },
         {
             name: 'Blue Eight',
@@ -416,7 +416,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_8.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_8.png'
         }, 
         {
             name: 'Blue Nine',
@@ -425,7 +425,7 @@ export const cards = {
             count: 2,
             
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_9.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_9.png'
         },
         {
             name: 'Blue Skip',
@@ -433,7 +433,7 @@ export const cards = {
             value: 'Skip',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_Skip.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_Skip.png'
         },
         {
             name: 'Blue Reverse',
@@ -441,7 +441,7 @@ export const cards = {
             value: 'Reverse',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_Reverse.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_Reverse.png'
         }, 
         {
             name: 'Blue Draw Two',
@@ -449,7 +449,7 @@ export const cards = {
             value: 'Draw Two',
             count: 2,
             inPlay: 0,
-            image: './src/assets/UNOcards/blue/Blue_Draw.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/blue/Blue_Draw.png'
         },
     ],
     // Wild Cards
@@ -460,7 +460,7 @@ export const cards = {
             value: 'Wild',
             count: 4,
             inPlay: 0,
-            image: './src/assets/UNOcards/wild/Wild.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/wild/Wild.png'
         },
         {
             name: 'Wild Draw Four',
@@ -468,7 +468,7 @@ export const cards = {
             value: 'Wild Draw Four',
             count: 4,
             inPlay: 0,
-            image: './src/assets/UNOcards/wild/Wild_Draw.png'
+            image: './node_modules/discord-uno/src/data/assets/cards/wild/Wild_Draw.png'
         }
     ]
 }
