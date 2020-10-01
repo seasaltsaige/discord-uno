@@ -18,7 +18,7 @@ Make sure you have installed the latest stable version of [Node.js](https://node
 const Discord = require("discord.js");
 const { DiscordUNO } = require("discord-uno");
 const client = new Discord.Client();
-const discordUNO = new DiscordUNO(client);
+const discordUNO = new DiscordUNO();
 
 client.on("ready", () => {
     console.log("Ready!");
@@ -37,7 +37,7 @@ client.login("token");
 import { Client } from "discord.js";
 import { DiscordUNO } from "discord-uno";
 const client = new Client();
-const discordUNO = new DiscordUNO(client);
+const discordUNO = new DiscordUNO();
 
 client.on("ready", () => {
     console.log("Ready!");

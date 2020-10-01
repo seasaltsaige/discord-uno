@@ -5,4 +5,8 @@ export default interface User {
     id: Snowflake;
     hand: Card[];
     safe: boolean;
+    DM?: {
+        messageId: Snowflake;
+        channelId: Snowflake;
+    }
 }
