@@ -168,7 +168,7 @@ client.on("message", async message => {
         await discordUNO.updateSetting(message);
 });
 ```
-To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Guild ID). It will send a message and react to the message, allowing you to change settings based on reactions.
+To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Channel ID). It will send a message and react to the message, allowing you to change settings based on reactions.
 ___
 ### viewSettings(message: Message): Promise\<Message\>
 ```js
