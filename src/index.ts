@@ -1,5 +1,6 @@
 import Canvas from "canvas";
-import { Client, Collection, ColorResolvable, DMChannel, Guild, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, TextChannel, User } from "discord.js";
+import { Collection, ColorResolvable, DMChannel, Guild, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, TextChannel, User } from "discord.js";
+import { Message as ErisMessage, Channel, Textable } from "eris";
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
@@ -9,8 +10,6 @@ import Winners from "./data/interfaces/Winners.interface";
 import axios from "axios";
 
 const NPMPackage = require("./package.json");
-
-const color = ""
 
 export class DiscordUNO {
     constructor(
@@ -38,7 +37,7 @@ export class DiscordUNO {
                 }
             }
         }
-    ) { if (!color) this.embedColor = "#FF0000" };
+    ) { if (!this.embedColor) this.embedColor = "#FF0000" };
     
 
     /**
