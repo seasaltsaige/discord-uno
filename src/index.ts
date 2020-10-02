@@ -223,7 +223,8 @@ export class DiscordUNO {
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
 
-
+        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
+        
         let jumpedIn = false;
         if (settings.jumpIns) {
             if (cardObject.name === foundGame.topCard.name && foundGame.users[foundGame.currentPlayer].id !== message.author.id) {
@@ -235,7 +236,7 @@ export class DiscordUNO {
 
         if (!this.checkTop(foundGame.topCard, cardObject) && jumpedIn === false) return message.channel.send(`You can't play that card! Either play a ${foundGame.topCard.value} Card or a ${foundGame.topCard.color} Card.`);
 
-        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
+
 
         const lastPlayer = foundGame.currentPlayer;
         foundGame.topCard = cardObject;
