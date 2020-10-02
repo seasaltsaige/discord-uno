@@ -161,9 +161,17 @@ export class DiscordUNO {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game going on in this channel to view cards in. Try creating one instead.");
         if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
-        const userHand = (<Player>foundGame.users.find(user => user.id === message.author.id)).hand;
+        const userHand = foundGame.users.find(user => user.id === message.author.id).hand;
+        
+        const Embed = new MessageEmbed()
+            .setColor(this.embedColor)
+            .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+            .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
+        const authorChannel = <DMChannel>message.client.channels.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.channelId);
+        const authorMsg = authorChannel.messages.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.messageId);
+
         message.channel.send(`${message.author}, check your DMs!`);
-        return message.author.send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`);
+        return authorMsg.edit("", { embed: Embed });
     }
 
     /**
