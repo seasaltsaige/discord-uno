@@ -41,8 +41,7 @@
     "@types/ws": "^7.2.6",
     "axios": "^0.20.0",
     "canvas": "^2.6.1",
-    "discord.js": "^12.3.1",
-    "eris": "^0.13.3"
+    "discord.js": "^12.3.1"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
