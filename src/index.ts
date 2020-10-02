@@ -7,10 +7,6 @@ import Settings from "./data/interfaces/Settings.interface";
 import Player from "./data/interfaces/User.interface";
 import Winners from "./data/interfaces/Winners.interface";
 import axios from "axios";
-import fs from "fs"
-fs.readFile("file", (err) => {
-    if (err) throw err;
-})
 
 const NPMPackage = require("./package.json");
 
