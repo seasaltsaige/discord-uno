@@ -18,7 +18,10 @@ Make sure you have installed the latest stable version of [Node.js](https://node
 const Discord = require("discord.js");
 const { DiscordUNO } = require("discord-uno");
 const client = new Discord.Client();
-const discordUNO = new DiscordUNO();
+const discordUNO = new DiscordUNO(); /** You can add an optional string to the class, 
+                                    this string (color) will be the color for all embeds that 
+                                    are sent. ie: new DiscordUNO("RED"), any Discord ColorResolvable
+                                    will work. **/
 
 client.on("ready", () => {
     console.log("Ready!");
@@ -178,3 +181,5 @@ client.on("message", async message => {
 });
 ```
 To view the current servers UNO! settings, call the viewSettings() method. This method has one parameter, which is the Message object. This method will return a message showing which customizable settings have been turned on or off.
+___
+### version: { current: string, updates }

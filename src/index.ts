@@ -1170,7 +1170,7 @@ export class DiscordUNO {
             case "normal":
                 return (settings.reverse ? player - 1 < 0 ? storage.users.length - 1 : player - 1 : player + 1 >= storage.users.length ? 0 : player + 1);
             case "skip":
-                return (storage.users.length == 2 ? player : settings.reverse ? (player - 1) < 0 ? storage.users.length - 1 : player - 1 : (player + 1) > storage.users.length - 1 ? 0 : player + 1); 
+                return (storage.users.length == 2 ? player : settings.reverse ? (player - 2) < 0 ? storage.users.length - 2 : player - 2 : (player + 2) > storage.users.length - 1 ? 0 : (player + 2) > storage.users.length ? 1 : player + 2); 
         };
     }
     private async displayWinners(message: Message, foundWinners: Winners[]): Promise<Buffer> {
