@@ -95,7 +95,8 @@ export class DiscordUNO {
 
         foundGame.users.push({
             id: message.author.id,
-            hand: this.createCards(message, 7, false),
+            // hand: this.createCards(message, 1, false),  // FRIKEN REMOVE THIS WHEN DONE TESTING PLEASE
+            hand: [{ name: `${foundGame.topCard.color} Skip`, color: foundGame.topCard.color, count: 2, inPlay: 1, image: "aaaa", value: "Skip" }],
             safe: false,
         });
         
@@ -214,26 +215,28 @@ export class DiscordUNO {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to play a card in! Try making a new game instead.");
         if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
+
         const settings = this.settings.get(message.channel.id);
 
-        const user = foundGame.users[foundGame.currentPlayer];
+        const user = foundGame.users.find(u => u.id === message.author.id);
         const card = message.content.split(" ").slice(1).join(" ");
         if (!card) return message.channel.send("Please provide a valid card.");
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
-        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
+
 
         let jumpedIn = false;
         if (settings.jumpIns) {
-            if (cardObject.name === foundGame.topCard.name && user.id !== message.author.id) {
+            if (cardObject.name === foundGame.topCard.name && foundGame.users[foundGame.currentPlayer].id !== message.author.id) {
                 jumpedIn = true;
-                foundGame.currentPlayer = foundGame.users.findIndex(user => user.id === message.author.id);
-            } else return message.channel.send("It isn't your turn yet!");
+                foundGame.currentPlayer = foundGame.users.findIndex(u => u.id === message.author.id);
+            } else if (cardObject.name !== foundGame.topCard.name && foundGame.users[foundGame.currentPlayer].id !== message.author.id) return message.channel.send("You can't jump in with that card...")
+            else if (this.checkTop(foundGame.topCard, cardObject) && foundGame.users[foundGame.currentPlayer].id === message.author.id) jumpedIn = false;
         } else if (user.id !== message.author.id) return message.channel.send("Jump in's are disabled in this game, and it isn't your turn yet!");
 
-        if (!this.checkTop(foundGame.topCard, cardObject)) return message.channel.send(`You can't play that card! Either play a ${foundGame.topCard.value} Card or a ${foundGame.topCard.color} Card.`);
+        if (!this.checkTop(foundGame.topCard, cardObject) && jumpedIn === false) return message.channel.send(`You can't play that card! Either play a ${foundGame.topCard.value} Card or a ${foundGame.topCard.color} Card.`);
 
-        
+        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
 
         const lastPlayer = foundGame.currentPlayer;
         foundGame.topCard = cardObject;
@@ -254,17 +257,33 @@ export class DiscordUNO {
                 .setAuthor(message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).username, message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).displayAvatarURL({ format: "png" }));
             if (foundGame.users[lastPlayer].hand.length >= 1) message.channel.send("", { embed: Embed });
         }
+        let gameLength = foundGame.users.length;
+        for (let i = 0; i < gameLength; i++) {
+            if (foundGame.users[i].hand.length < 1) {
+                const winners = this.winners.get(message.channel.id);
+                winners.push({ id: foundGame.users[i].id });
+                this.winners.set(message.channel.id, winners);
+                foundGame.users.splice(foundGame.users.findIndex(u => u.id === foundGame.users[i].id), 1);
+                i--;
+                gameLength--;
+                const Embed = new MessageEmbed()
+                    .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
+                    .setColor(this.embedColor)
+                    .setDescription(`${message.author} went out with 0 cards! It is now ${message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn!`);
+                if (foundGame.users.length > 1) return message.channel.send("", { embed: Embed });
+                else {
+                    winners.push({ id: foundGame.users[i].id });
+                    this.winners.set(message.channel.id, winners);
+                    foundGame.users.splice(foundGame.users.findIndex(u => u.id === foundGame.users[i].id), 1);
+                    const attach = new MessageAttachment(await this.displayWinners(message, winners), "Winners.png");
+                    Embed.setAuthor(message.client.user.username, message.client.user.displayAvatarURL({ format: "png" }))
+                        .attachFiles([attach])
+                        .setImage(`attachment://Winners.png`)
+                        .setDescription(`${message.author} went out with 0 cards! There was only one person left in the game so scores have been calculated!`)
+                    return message.channel.send("", { embed: Embed });
 
-        if (foundGame.users[lastPlayer].hand.length < 1) {
-            const winners = this.winners.get(message.channel.id);
-            winners.push({ id: foundGame.users[lastPlayer].id });
-            this.winners.set(message.channel.id, winners);
-            foundGame.users.splice(foundGame.users.findIndex(u => u.id === foundGame.users[lastPlayer].id), 1);
-            const Embed = new MessageEmbed()
-                .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-                .setColor(this.embedColor)
-                .setDescription(`${message.author} went out with 0 cards! It is now ${message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id).tag}'s turn!`);
-            if (foundGame.users.length > 1) return message.channel.send("", { embed: Embed });
+                }
+            }
         }
 
         const channel = <DMChannel>message.client.channels.cache.get(foundGame.users[lastPlayer].DM.channelId);
@@ -435,10 +454,11 @@ export class DiscordUNO {
         const foundWinners = this.winners.get(message.channel.id);
 
         const sortedUsers = foundGame.users.sort((a, b) => a.hand.length - b.hand.length);
-        for (const user of sortedUsers) {
-            foundWinners.push({ id: user.id });
-            foundGame.users.splice(foundGame.users.findIndex(u => u.id === user.id), 1);
+        const length = sortedUsers.length;
+        for (let i = 0; i < length; i++) {
+            foundWinners.push({ id: sortedUsers[i].id });
         }
+        foundGame.users = [];
         this.storage.set(message.channel.id, foundGame);
         this.winners.set(message.channel.id, foundWinners);
 
@@ -556,7 +576,12 @@ export class DiscordUNO {
         const msg = channel.messages.cache.get(foundGame.users[foundGame.currentPlayer].DM.messageId);
 
         msg.channel.send(`${message.author}`).then(m => m.delete());
-        return msg.edit(`You drew 1 card. Your new hand has ${foundGame.users[foundGame.currentPlayer].hand.length}.\n\n${foundGame.users[foundGame.currentPlayer].hand.map(c => c.name).join(" | ")}`);
+
+        const Embed = new MessageEmbed()
+            .setColor(this.embedColor)
+            .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
+            .setDescription(`You drew 1 card. Your new hand has ${foundGame.users[foundGame.currentPlayer].hand.length}.\n\n${foundGame.users[foundGame.currentPlayer].hand.map(c => c.name).join(" | ")}`)
+        return msg.edit("", { embed: Embed });
     }
 
     /**
@@ -839,7 +864,12 @@ export class DiscordUNO {
             special = true;
 
             let color: "green" | "red" | "blue" | "yellow";
-            const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`)
+
+            const EmMsg = new MessageEmbed()
+                .setDescription(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`)
+                .setColor(this.embedColor)
+                .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
+            const msg = await message.channel.send("", { embed: EmMsg });
     
             const filter = (reaction: MessageReaction, user: User) => {
                 if (user.bot) return;
@@ -881,7 +911,7 @@ export class DiscordUNO {
                 .setDescription(`${message.author.tag} played a ${card.name} and switched the color to ${color}. It is now ${message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).user.tag}'s turn`)
                 .setColor(this.embedColor)
                 .setAuthor(message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).user.username, message.guild.members.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).user.displayAvatarURL({ format: "png" }));
-            message.channel.send("", { embed: MsgEmbed });
+            msg.edit("", { embed: MsgEmbed });
 
         } else if (card.name.toLowerCase().includes("reverse")) { // Done
             special = true;
@@ -997,8 +1027,16 @@ export class DiscordUNO {
                 };
 
                 const dataToChooseFrom = data.users.filter(user => user.id !== message.author.id);
-                const desciption = dataToChooseFrom.map(user => `${dataToChooseFrom.findIndex(u => u.id === user.id) + 1} - ${message.guild.members.cache.get(user.id).user.tag} has ${user.hand.length} cards`).join("\n");
-                const msg = await message.channel.send(`${message.author} who would you like to swap cards with?\n\n${desciption}`);
+
+
+                const numbers = {  "0": "1️⃣", "1": "2️⃣", "2": "3️⃣", "3": "4️⃣", "4": "5️⃣", "5": "6️⃣", "6": "7️⃣", "7": "8️⃣", "8": "9️⃣" }
+                //@ts-ignore
+                const desciption = dataToChooseFrom.map(user => `${numbers[(dataToChooseFrom.findIndex(u => u.id === user.id) + 1).toString()]} - ${message.guild.members.cache.get(user.id).user.tag} has ${user.hand.length} cards`).join("\n");
+                const EmbedMsg = new MessageEmbed()
+                    .setDescription(`${message.author} who would you like to swap cards with?\n\n${desciption}`)
+                    .setColor(this.embedColor)
+                    .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
+                const msg = await message.channel.send("", { embed: EmbedMsg });
 
                 const filter = (reaction: MessageReaction, user: User) => reactions.includes(reaction.emoji.name) && message.author.id === user.id;
 
@@ -1046,6 +1084,10 @@ export class DiscordUNO {
 
                 userChannel.send("Attention.").then(m => m.delete());
                 userMsg.edit("", { embed: Embed });
+
+                EmbedMsg.setDescription(`${message.author} swapped hands with ${user}! It is now ${message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id)}'s turn!`)
+                .setAuthor(message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).username, message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).displayAvatarURL({ format: "png" }));
+                msg.edit("", { embed: EmbedMsg }).then(m => m.reactions.removeAll());
             }
         } else if (card.name.toLowerCase().includes("draw two")) { // Done
             type = "skip";
@@ -1070,6 +1112,7 @@ export class DiscordUNO {
         }
 
         if (special) {
+            if (data.users[data.currentPlayer].hand.length < 1) type = "normal";
             data.currentPlayer = this.nextTurn(data.currentPlayer, type, settings, data);
             this.settings.set(message.channel.id, settings);
             this.storage.set(message.channel.id, data);

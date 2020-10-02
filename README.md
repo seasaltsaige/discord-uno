@@ -40,7 +40,10 @@ client.login("token");
 import { Client } from "discord.js";
 import { DiscordUNO } from "discord-uno";
 const client = new Client();
-const discordUNO = new DiscordUNO();
+const discordUNO = new DiscordUNO(); /** You can add an optional string to the class, 
+                                    this string (color) will be the color for all embeds that 
+                                    are sent. ie: new DiscordUNO("RED"), any Discord ColorResolvable
+                                    will work. **/
 
 client.on("ready", () => {
     console.log("Ready!");
