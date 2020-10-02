@@ -95,8 +95,7 @@ export class DiscordUNO {
 
         foundGame.users.push({
             id: message.author.id,
-            // hand: this.createCards(message, 1, false),  // FRIKEN REMOVE THIS WHEN DONE TESTING PLEASE
-            hand: [{ name: `${foundGame.topCard.color} Skip`, color: foundGame.topCard.color, count: 2, inPlay: 1, image: "aaaa", value: "Skip" }],
+            hand: this.createCards(message, 7, false),  // FRIKEN REMOVE THIS WHEN DONE TESTING PLEASE
             safe: false,
         });
         
