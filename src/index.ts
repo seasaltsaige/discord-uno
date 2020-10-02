@@ -1,5 +1,5 @@
 import Canvas from "canvas";
-import { Client, Collection, DMChannel, Guild, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, User } from "discord.js";
+import { Client, Collection, ColorResolvable, DMChannel, Guild, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, TextChannel, User } from "discord.js";
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
@@ -10,9 +10,11 @@ import axios from "axios";
 
 const NPMPackage = require("./package.json");
 
+const color = ""
+
 export class DiscordUNO {
     constructor(
-        // public client: Client, 
+        public embedColor?: ColorResolvable,
         private storage = new Collection<Snowflake, GameData>(), 
         private gameCards = new Collection<Snowflake, typeof gameCardsArray>(),
         private settings = new Collection<Snowflake, Settings>(),
@@ -36,7 +38,7 @@ export class DiscordUNO {
                 }
             }
         }
-    ) { };
+    ) { if (!color) this.embedColor = "#FF0000" };
     
 
     /**
@@ -62,7 +64,7 @@ export class DiscordUNO {
 
         if (this.storage.get(message.channel.id)) return message.channel.send("There is already a game going on in this channel. Please join that one instead or create a new game in another channel.");
         this.storage.set(message.channel.id, {
-            guild: (<Guild>message.guild).id,
+            guild: message.guild.id,
             channel: message.channel.id,
             creator: message.author.id,
             active: false,
@@ -75,8 +77,10 @@ export class DiscordUNO {
             currentPlayer: 1,
         });
 
-
-        return message.channel.send(`${message.author} created an UNO! game! You can now join the game!`);
+        const Embed = new MessageEmbed()
+            .setColor(this.embedColor)
+            .setAuthor(`${message.author.tag} created an UNO! game! You can now join the game!`, message.author.displayAvatarURL({ format: "png" }));
+        return message.channel.send("", { embed: Embed });
     };
 
     /**
@@ -103,11 +107,21 @@ export class DiscordUNO {
     
             for (const user of foundGame.users) {
                 const userHand = user.hand;
-                const m = await message.client.users.cache.get(user.id).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`);
+                const userOb = message.client.users.cache.get(user.id);
+
+                const Embed = new MessageEmbed()
+                    .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+                    .setColor(this.embedColor)
+                    .setAuthor(userOb.username, userOb.displayAvatarURL({ format: "png" }));
+                const m = await userOb.send("", { embed: Embed });
                 user.DM = { channelId: m.channel.id, messageId: m.id };
             };
 
-            return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
+            const Embed = new MessageEmbed()
+                .setColor(this.embedColor)
+                .setDescription(`**Top Card:** ${foundGame.topCard.name}`)
+                .setFooter(`Current Player: ${(<User>message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`);
+            return message.channel.send("", { embed: Embed });
         }
         // Note to self use { embed: EmbedName } for embed messages, discord is weird lmao
         this.storage.set(message.channel.id, foundGame);
@@ -171,11 +185,21 @@ export class DiscordUNO {
 
         for (const user of foundGame.users) {
             const userHand = user.hand;
-            const m = await message.client.users.cache.get(user.id).send(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`);
+            const userOb = message.client.users.cache.get(user.id);
+
+            const Embed = new MessageEmbed()
+                .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+                .setColor(this.embedColor)
+                .setAuthor(userOb.username, userOb.displayAvatarURL({ format: "png" }));
+            const m = await userOb.send("", { embed: Embed });
             user.DM = { channelId: m.channel.id, messageId: m.id };
         };
 
-        return message.channel.send(`Top Card: ${foundGame.topCard.name}\n\nCurrent Player: ${(<User>message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`)
+        const Embed = new MessageEmbed()
+            .setColor(this.embedColor)
+            .setDescription(`**Top Card:** ${foundGame.topCard.name}`)
+            .setFooter(`Current Player: ${(<User>message.client.users.cache.get(foundGame.users[foundGame.currentPlayer].id)).tag}`);
+        return message.channel.send("", { embed: Embed });
     }
     /**
      * To play a card in your hand, call the playCard() method. This method accepts one parameter, which is the message object. This method will handle playing the card called. On success, it will remove the card from their hand and replace the top card. On fail it will return.
@@ -530,7 +554,11 @@ export class DiscordUNO {
         let wildChallenge = foundSettings.wildChallenge;
         let zero = foundSettings.zero;
 
-        const react = await message.channel.send(`**Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n**Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n**Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n**Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}\n\n**(React to toggle options)**`);
+        const Embed = new MessageEmbed()
+            .setDescription(`1️⃣ - **Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n2️⃣ - **Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n3️⃣ - **Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n4️⃣ - **Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}\n\n✅ - Confirm\n❌ - Cancel`)
+            .setColor(this.embedColor)
+            .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
+        const react = await message.channel.send("", { embed: Embed });
 
         const emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "✅", "❌"];
 
@@ -563,15 +591,20 @@ export class DiscordUNO {
                         wildChallenge,
                         zero,
                     });
-                    react.edit(`Successfully updated UNO! settings for **${message.guild.name}**`);
+                    react.edit(`Successfully updated UNO! settings for **${(<TextChannel>message.channel).name}**`, { embed: null });
                     react.reactions.removeAll().catch(console.log);
                 return collector.stop();
                 case "❌":
-                    react.edit("Cancelled.");
+                    react.edit("Cancelled.", { embed: null });
                     react.reactions.removeAll().catch(console.log);
                 return collector.stop("Cancelled");
             }
-            react.edit(`**Jump Ins:** ${jumpIns ? "On" : "Off"}\n**Seven Swap:** ${seven ? "On" : "Off"}\n**Wild Challenging:** ${wildChallenge ? "On" : "Off"}\n**Zero Rotation:** ${zero ? "On" : "Off"}\n\n**(React to toggle options)**`)
+
+            Embed.setDescription(`1️⃣ - **Jump Ins:** ${jumpIns ? "On" : "Off"}\n2️⃣ - **Seven Swap:** ${seven ? "On" : "Off"}\n3️⃣ - **Wild Challenging:** ${wildChallenge ? "On" : "Off"}\n4️⃣ - **Zero Rotation:** ${zero ? "On" : "Off"}\n\n✅ - Confirm\n❌ - Cancel`)
+
+
+            // Embed.setDescription(`1️⃣ - **Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n2️⃣ - **Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n3️⃣ - **Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n4️⃣ - **Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}\n\n✅ - Confirm\n❌ - Cancel`)
+            react.edit("", { embed: Embed });
             reaction.users.remove(user.id);
         });
     }
