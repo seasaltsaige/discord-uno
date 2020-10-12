@@ -629,6 +629,13 @@ export class DiscordUNO {
         if (!foundGame.users.some(user => user.id === message.author.id)) return message.channel.send("You can't draw cards in this game! You aren't part of it!");
         if (!foundGame.active) return message.channel.send("You can't draw cards from a game that hasn't started yet!");
         if (foundGame.users[foundGame.currentPlayer].id !== message.author.id) return message.channel.send("You can't draw cards yet! It isn't your turn.");
+
+        const beforeCondition = foundGame.users[foundGame.currentPlayer].hand.find(c => c.color === foundGame.topCard.color)
+            || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === foundGame.topCard.value)
+                || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === "null");
+
+        if (beforeCondition) return message.channel.send("You already have a card in your hand that you can play! Try playing that instead.");
+
         const newCard = this.createCards(message, 1, false);
 
         const foundSettings = this.settings.get(message.channel.id);
@@ -638,17 +645,17 @@ export class DiscordUNO {
         const author = message.author;
         const nextUser = message.client.users.cache.get(foundGame.users[this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame)].id);
 
-        const condition = !foundGame.users[foundGame.currentPlayer].hand.some(c => c.color === foundGame.topCard.color)
-            || !foundGame.users[foundGame.currentPlayer].hand.some(c => c.value === foundGame.topCard.value)
-                || !foundGame.users[foundGame.currentPlayer].hand.some(c => c.value === "null");
+        const condition = foundGame.users[foundGame.currentPlayer].hand.find(c => c.color === foundGame.topCard.color)
+            || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === foundGame.topCard.value)
+                || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === "null");
 
         const DrawEmbed = new MessageEmbed()
             .setColor(this.embedColor)
-            .setDescription(`${message.author}, you drew 1 card! Check your DM's for your new hand.${condition ? ` ${message.author.username} couldn't play a card. It is now ${message.client.users.cache.get(foundGame.users[this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame)].id).username}'s turn.` : ""}`)
-            .setAuthor(condition ? nextUser.username : author.username, condition ? nextUser.displayAvatarURL({ format: "png" }) : author.displayAvatarURL({ format: "png" }));
+            .setDescription(`${message.author}, you drew 1 card! Check your DM's for your new hand.${!condition ? ` ${message.author.username} couldn't play a card. It is now ${message.client.users.cache.get(foundGame.users[this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame)].id).username}'s turn.` : ""}`)
+            .setAuthor(!condition ? nextUser.username : author.username, !condition ? nextUser.displayAvatarURL({ format: "png" }) : author.displayAvatarURL({ format: "png" }));
         message.channel.send("", { embed: DrawEmbed });
 
-        if (condition) foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame);
+        if (!condition) foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame);
 
         this.storage.set(message.channel.id, foundGame);
 
@@ -660,7 +667,7 @@ export class DiscordUNO {
         const Embed = new MessageEmbed()
             .setColor(this.embedColor)
             .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-            .setDescription(`You drew 1 card. Your new hand has ${foundGame.users[foundGame.currentPlayer].hand.length}.\n\n${foundGame.users[foundGame.currentPlayer].hand.map(c => c.name).join(" | ")}`)
+            .setDescription(`You drew 1 card. Your new hand has ${foundGame.users.find(u => u.id === message.author.id).hand.length}.\n\n${foundGame.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
         return msg.edit("", { embed: Embed });
     }
 
