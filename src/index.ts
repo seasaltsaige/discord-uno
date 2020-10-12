@@ -190,7 +190,7 @@ export class DiscordUNO {
 
                 const m = await message.author.send("", { embed: Embed });
                 message.channel.send(`${message.author}, check your DMs!`);
-                
+
                 user.DM = {
                     channelId: m.channel.id,
                     messageId: m.id,
@@ -713,7 +713,7 @@ export class DiscordUNO {
                         zero,
                     });
                     react.edit(`Successfully updated UNO! settings for **${(<TextChannel>message.channel).name}**`, { embed: null });
-                    react.reactions.removeAll().catch(console.log);
+                    react.reactions.removeAll().catch();
                 return collector.stop();
                 case "❌":
                     react.edit("Cancelled.", { embed: null });
@@ -726,7 +726,7 @@ export class DiscordUNO {
 
             // Embed.setDescription(`1️⃣ - **Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n2️⃣ - **Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n3️⃣ - **Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n4️⃣ - **Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}\n\n✅ - Confirm\n❌ - Cancel`)
             react.edit("", { embed: Embed });
-            reaction.users.remove(user.id);
+            reaction.users.remove(user.id).catch();
         });
     }
 
