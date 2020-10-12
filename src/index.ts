@@ -464,6 +464,9 @@ export class DiscordUNO {
 
         const winnersImage = await this.displayWinners(message, foundWinners);
 
+        this.storage.delete(message.channel.id);
+        this.winners.delete(message.channel.id);
+        
         return message.channel.send(`The game has been ended by ${message.author}! Scores have been calculated.`, { files: [
             new MessageAttachment(winnersImage),
         ] });
