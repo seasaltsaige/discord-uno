@@ -713,11 +713,11 @@ export class DiscordUNO {
                         zero,
                     });
                     react.edit(`Successfully updated UNO! settings for **${(<TextChannel>message.channel).name}**`, { embed: null });
-                    react.reactions.removeAll().catch();
+                    react.reactions.removeAll().catch(err => "");
                 return collector.stop();
                 case "❌":
                     react.edit("Cancelled.", { embed: null });
-                    react.reactions.removeAll().catch(console.log);
+                    react.reactions.removeAll().catch(err => "");
                 return collector.stop("Cancelled");
             }
 
@@ -726,7 +726,7 @@ export class DiscordUNO {
 
             // Embed.setDescription(`1️⃣ - **Jump Ins:** ${foundSettings.jumpIns ? "On" : "Off"}\n2️⃣ - **Seven Swap:** ${foundSettings.seven ? "On" : "Off"}\n3️⃣ - **Wild Challenging:** ${foundSettings.wildChallenge ? "On" : "Off"}\n4️⃣ - **Zero Rotation:** ${foundSettings.zero ? "On" : "Off"}\n\n✅ - Confirm\n❌ - Cancel`)
             react.edit("", { embed: Embed });
-            reaction.users.remove(user.id).catch();
+            reaction.users.remove(user.id).catch(err => "");
         });
     }
 
