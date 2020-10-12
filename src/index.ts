@@ -631,9 +631,19 @@ export class DiscordUNO {
         if (foundGame.users[foundGame.currentPlayer].id !== message.author.id) return message.channel.send("You can't draw cards yet! It isn't your turn.");
         const newCard = this.createCards(message, 1, false);
 
+        const foundSettings = this.settings.get(message.channel.id);
+
         foundGame.users[foundGame.currentPlayer].hand.push(newCard[0]);
 
-        message.channel.send(`${message.author}, check your DMs for your new hand!`);
+        const condition = foundGame.users[foundGame.currentPlayer].hand.some(c => c.color === foundGame.topCard.color || c.value === foundGame.topCard.value);
+
+        const DrawEmbed = new MessageEmbed()
+            .setColor(this.embedColor)
+            .setDescription(`${message.author}, you drew 1 card! Check your DM's for your new hand.${condition ? ` ${message.author.username} couldn't play a card. It is now ${message.client.users.cache.get(foundGame.users[this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame)].id).username}'s turn.` : ""}`)
+            .setAuthor(message.client.users.cache.get(foundGame.users[this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame)].id).username, message.client.users.cache.get(foundGame.users[this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame)].id).displayAvatarURL({ format: "png" }));
+        message.channel.send("", { embed: DrawEmbed });
+
+        if (condition) foundGame.currentPlayer = this.nextTurn(foundGame.currentPlayer, "normal", foundSettings, foundGame);
 
         this.storage.set(message.channel.id, foundGame);
 
