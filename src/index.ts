@@ -1,5 +1,5 @@
 import Canvas from "canvas";
-import { Collection, ColorResolvable, DMChannel, Guild, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, TextChannel, User } from "discord.js";
+import { Collection, ColorResolvable, DMChannel, Message, MessageAttachment, MessageEmbed, MessageReaction, Snowflake, TextChannel, User } from "discord.js";
 import { cards as gameCardsArray } from "./data/Cards";
 import Card from "./data/interfaces/Card.interface";
 import GameData from "./data/interfaces/GameData.interface";
@@ -529,8 +529,10 @@ export class DiscordUNO {
      */
     public async viewWinners(message: Message): Promise<Message> {
         const foundWinners = this.winners.get(message.channel.id);
+        const foundGame = this.storage.get(message.channel.id);
         if (!foundWinners) return message.channel.send("There is no game in this channel to view the winners of!");
         if (foundWinners.length < 1) return message.channel.send("No one has gone out yet!");
+        if (!foundGame.active) return message.channel.send("This game hasn't started yet. Please wait until it starts!");
 
         const standings = await this.displayWinners(message, foundWinners);
 
@@ -587,7 +589,11 @@ export class DiscordUNO {
     /**
      * To update the servers UNO! settings, call the updateSettings() method. This method has one parameter, which is the Message object. This method handles updating the servers UNO! settings. (The settings are stored by Channel ID). It will send a message and react to the message, allowing you to change settings based on reactions.
      */
-    public async updateSettings(message: Message): Promise<void> {
+    public async updateSettings(message: Message): Promise<void | Message> {
+
+        const foundGame = this.storage.get(message.channel.id);
+        if (foundGame && foundGame.active) return message.channel.send("You can't change the settings during the game!");
+
         let foundSettings = this.settings.get(message.channel.id);
         if (!foundSettings) {
             this.settings.set(message.channel.id, {
