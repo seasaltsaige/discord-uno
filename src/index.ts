@@ -647,8 +647,8 @@ export class DiscordUNO {
 
         this.storage.set(message.channel.id, foundGame);
 
-        const channel = <DMChannel>message.client.channels.cache.get(foundGame.users[foundGame.currentPlayer].DM.channelId);
-        const msg = channel.messages.cache.get(foundGame.users[foundGame.currentPlayer].DM.messageId);
+        const channel = <DMChannel>message.client.channels.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.channelId);
+        const msg = channel.messages.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.messageId);
 
         msg.channel.send(`${message.author}`).then(m => m.delete());
 
