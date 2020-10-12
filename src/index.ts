@@ -103,6 +103,8 @@ export class DiscordUNO {
             foundGame.active = true;
             this.storage.set(message.channel.id, foundGame);
     
+            const BadUsers = [];
+
             for (const user of foundGame.users) {
                 const userHand = user.hand;
                 const userOb = message.client.users.cache.get(user.id);
@@ -111,9 +113,21 @@ export class DiscordUNO {
                     .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
                     .setColor(this.embedColor)
                     .setAuthor(userOb.username, userOb.displayAvatarURL({ format: "png" }));
-                const m = await userOb.send("", { embed: Embed });
-                user.DM = { channelId: m.channel.id, messageId: m.id };
+                try {
+                    const m = await userOb.send("", { embed: Embed });
+                    user.DM = { channelId: m.channel.id, messageId: m.id };
+                } catch (err) {
+                    BadUsers.push(userOb.id);
+                }
             };
+
+            if (BadUsers.length > 0) {
+                const BadEmbed = new MessageEmbed()
+                    .setAuthor("Turn DM's On!", message.client.user.displayAvatarURL({ format: "png" }))
+                    .setDescription(`${BadUsers.map(u => message.client.users.cache.get(u)).join(", ")} please turn your DM's on if you want to view your cards!`)
+                    .setColor(this.embedColor);
+                message.channel.send("", { embed: BadEmbed });
+            }
 
             const Embed = new MessageEmbed()
                 .setColor(this.embedColor)
@@ -157,21 +171,53 @@ export class DiscordUNO {
     /**
      * To view your current hand in the game, call the viewCards() method. This method accepts one parameter, which is the Message object. This method will handle showing users the current cards that they have in their hand. It will return a dirrect message to the user with their hand.
      */
-    public viewCards(message: Message): Promise<Message> {
+    public async viewCards(message: Message): Promise<Message> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game going on in this channel to view cards in. Try creating one instead.");
         if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
+        if (!foundGame.users.find(u => u.id === message.author.id)) return message.channel.send("You can't view your hand in a game you haven't joined.");
         const userHand = foundGame.users.find(user => user.id === message.author.id).hand;
         
-        const Embed = new MessageEmbed()
-            .setColor(this.embedColor)
-            .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
-            .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
-        const authorChannel = <DMChannel>message.client.channels.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.channelId);
-        const authorMsg = authorChannel.messages.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.messageId);
 
-        message.channel.send(`${message.author}, check your DMs!`);
-        return authorMsg.edit("", { embed: Embed });
+        if (!foundGame.users.find(u => u.id === message.author.id).DM) {
+            const user = foundGame.users.find(u => u.id === message.author.id);
+
+            const Embed = new MessageEmbed()
+                .setColor(this.embedColor)
+                .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+                .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
+            try {
+
+                const m = await message.author.send("", { embed: Embed });
+                message.channel.send(`${message.author}, check your DMs!`);
+                
+                user.DM = {
+                    channelId: m.channel.id,
+                    messageId: m.id,
+                }
+
+                this.storage.set(message.channel.id, foundGame);
+
+            } catch (err) {
+                const BadEmbed = new MessageEmbed()
+                    .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
+                    .setColor(this.embedColor)
+                    .setDescription("You need to have DM's enabled on this server for me to be able to DM you your cards!");
+                return message.channel.send("", { embed: BadEmbed });
+            }
+
+        } else {
+
+            const Embed = new MessageEmbed()
+                .setColor(this.embedColor)
+                .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
+                .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
+            const authorChannel = <DMChannel>message.client.channels.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.channelId);
+            const authorMsg = authorChannel.messages.cache.get(foundGame.users.find(u => u.id === message.author.id).DM.messageId);
+
+            message.channel.send(`${message.author}, check your DMs!`);
+            return authorMsg.edit("", { embed: Embed });
+        }
     }
 
     /**
@@ -188,6 +234,8 @@ export class DiscordUNO {
         foundGame.active = true;
         this.storage.set(message.channel.id, foundGame);
 
+        const BadUsers = [];
+
         for (const user of foundGame.users) {
             const userHand = user.hand;
             const userOb = message.client.users.cache.get(user.id);
@@ -196,9 +244,21 @@ export class DiscordUNO {
                 .setDescription(`Your current hand has ${userHand.length} cards. The cards are\n${userHand.map(data => data.name).join(" | ")}`)
                 .setColor(this.embedColor)
                 .setAuthor(userOb.username, userOb.displayAvatarURL({ format: "png" }));
-            const m = await userOb.send("", { embed: Embed });
-            user.DM = { channelId: m.channel.id, messageId: m.id };
+            try {
+                const m = await userOb.send("", { embed: Embed });
+                user.DM = { channelId: m.channel.id, messageId: m.id };
+            } catch (err) {
+                BadUsers.push(userOb.id);
+            }
         };
+
+        if (BadUsers.length > 0) {
+            const BadEmbed = new MessageEmbed()
+                .setAuthor("Turn DM's On!", message.client.user.displayAvatarURL({ format: "png" }))
+                .setDescription(`${BadUsers.map(u => message.client.users.cache.get(u)).join(", ")} please turn your DM's on if you want to view your cards!`)
+                .setColor(this.embedColor);
+            message.channel.send("", { embed: BadEmbed });
+        }
 
         const Embed = new MessageEmbed()
             .setColor(this.embedColor)
