@@ -58,7 +58,7 @@ export class DiscordUNO {
             this.winners.set(message.channel.id, []);
         }
 
-        this.gameCards.set(message.channel.id, gameCardsArray);
+        this.gameCards.set(message.channel.id, <typeof gameCardsArray>JSON.parse(JSON.stringify(gameCardsArray)));
 
         if (this.storage.get(message.channel.id)) return message.channel.send("There is already a game going on in this channel. Please join that one instead or create a new game in another channel.");
         this.storage.set(message.channel.id, {
@@ -95,7 +95,7 @@ export class DiscordUNO {
 
         foundGame.users.push({
             id: message.author.id,
-            hand: this.createCards(message, 7, false),  // FRIKEN REMOVE THIS WHEN DONE TESTING PLEASE
+            hand: this.createCards(message, 7, false),
             safe: false,
         });
         
@@ -277,13 +277,14 @@ export class DiscordUNO {
 
         const settings = this.settings.get(message.channel.id);
 
-        const user = foundGame.users.find(u => u.id === message.author.id);
+        const user = settings.jumpIns ? foundGame.users.find(u => u.id === message.author.id) : foundGame.users[foundGame.currentPlayer];
         const card = message.content.split(" ").slice(1).join(" ");
         if (!card) return message.channel.send("Please provide a valid card.");
 
         const cardObject = user.hand.find(crd => crd.name.toLowerCase() === card.toLowerCase());
 
-        if (!cardObject) return message.channel.send("You don't have that card in your hand!");
+        if (!cardObject && settings.jumpIns) return message.channel.send("You don't have that card in your hand!");
+        else if (!cardObject && !settings.jumpIns) return message.channel.send("It isn't your turn yet!");
         
         let jumpedIn = false;
         if (settings.jumpIns) {
@@ -525,6 +526,7 @@ export class DiscordUNO {
         const winnersImage = await this.displayWinners(message, foundWinners);
 
         this.storage.delete(message.channel.id);
+        this.gameCards.delete(message.channel.id);
         this.winners.delete(message.channel.id);
         
         return message.channel.send(`The game has been ended by ${message.author}! Scores have been calculated.`, { files: [
@@ -667,7 +669,7 @@ export class DiscordUNO {
         const Embed = new MessageEmbed()
             .setColor(this.embedColor)
             .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-            .setDescription(`You drew 1 card. Your new hand has ${foundGame.users.find(u => u.id === message.author.id).hand.length}.\n\n${foundGame.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
+            .setDescription(`You drew 1 card. Your new hand has ${foundGame.users.find(u => u.id === message.author.id).hand.length} cards.\n\n${foundGame.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
         return msg.edit("", { embed: Embed });
     }
 
@@ -1254,59 +1256,94 @@ export class DiscordUNO {
                     math = 5;
                 }
             }
-    
+
+            const outOfCards = this.outOfCards;
+
+            const notYellow = [ redCard, greenCard, blueCard, wildCard ];
+            const randomNotYellow = notYellow[Math.floor(Math.random() * notYellow.length)];
+
+            const notRed = [ yellowCard, greenCard, blueCard, wildCard ];
+            const randomNotRed = notRed[Math.floor(Math.random() * notRed.length)];
+
+            const notGreen = [ yellowCard, redCard, blueCard, wildCard ];
+            const randomNotGreen = notGreen[Math.floor(Math.random() * notGreen.length)];
+
+            const notBlue = [ yellowCard, redCard, greenCard, wildCard ];
+            const randomNotBlue = notBlue[Math.floor(Math.random() * notBlue.length)];
+
+            const notWild = [ yellowCard, redCard, greenCard, blueCard ];
+            const randomNotWild = notWild[Math.floor(Math.random() * notWild.length)];
+
+            function yellowCard (): void {
+                const tempMath = Math.floor(Math.random() * cards.yellow.length);
+                if (outOfCards(cards.yellow)) return randomNotYellow();
+                if (cards.yellow[tempMath].inPlay >= cards.yellow[tempMath].count) return yellowCard();
+                cardHand.push(cards.yellow[tempMath])
+                cards.yellow[tempMath].inPlay += 1;
+            }
+
+            function redCard (): void {
+                const tempMath2 = Math.floor(Math.random() * cards.red.length);
+                if (outOfCards(cards.red)) return randomNotRed();
+                if (cards.red[tempMath2].inPlay >= cards.red[tempMath2].count) return redCard();
+                cardHand.push(cards.red[tempMath2]);
+                cards.red[tempMath2].inPlay += 1;
+            }
+
+            function greenCard (): void {
+                const tempMath3 = Math.floor(Math.random() * cards.green.length);
+                if (outOfCards(cards.green)) return randomNotGreen();
+                if (cards.green[tempMath3].inPlay >= cards.green[tempMath3].count) return greenCard();
+                cardHand.push(cards.green[tempMath3]);
+                cards.green[tempMath3].inPlay += 1;
+            }
+
+            function blueCard (): void {
+                const tempMath4 = Math.floor(Math.random() * cards.blue.length);
+                if (outOfCards(cards.blue)) return randomNotBlue();
+                if (cards.blue[tempMath4].inPlay >= cards.blue[tempMath4].count) return blueCard();
+                cardHand.push(cards.blue[tempMath4]);
+                cards.blue[tempMath4].inPlay += 1;
+            }
+
+            function wildCard (): void {
+                const tempMath5 = Math.floor(Math.random() * cards.wild.length);
+                if (outOfCards(cards.wild)) return randomNotWild();
+                if (cards.wild[tempMath5].inPlay >= cards.wild[tempMath5].count) return wildCard();
+                cardHand.push(cards.wild[tempMath5]);
+                cards.wild[tempMath5].inPlay += 1;
+            }
+
             switch (math) {
                 case 1:
-                    const yellowCard = (): void => {
-                        const tempMath = Math.floor(Math.random() * cards.yellow.length);
-                        if (cards.yellow[tempMath].inPlay >= cards.yellow[tempMath].count) return yellowCard();
-                        cardHand.push(cards.yellow[tempMath])
-                        cards.yellow[tempMath].inPlay += 1;
-                    }
                     yellowCard();
                 break;
                 case 2:
-                    const redCard = (): void => {
-                        const tempMath2 = Math.floor(Math.random() * cards.red.length);
-                        if (cards.red[tempMath2].inPlay >= cards.red[tempMath2].count) return redCard();
-                        cardHand.push(cards.red[tempMath2]);
-                        cards.red[tempMath2].inPlay += 1;
-                    }
                     redCard();
                 break;
                 case 3:
-                    const greenCard = (): void => {
-                        const tempMath3 = Math.floor(Math.random() * cards.green.length);
-                        if (cards.green[tempMath3].inPlay >= cards.green[tempMath3].count) return greenCard();
-                        cardHand.push(cards.green[tempMath3]);
-                        cards.green[tempMath3].inPlay += 1;
-                    }
                     greenCard();
                 break;
                 case 4:
-                    const blueCard = (): void => {
-                        const tempMath4 = Math.floor(Math.random() * cards.blue.length);
-                        if (cards.blue[tempMath4].inPlay >= cards.blue[tempMath4].count) return blueCard();
-                        cardHand.push(cards.blue[tempMath4]);
-                        cards.blue[tempMath4].inPlay += 1;
-                    }
                     blueCard();
                 break;
                 case 5:
-                    const wildCard = (): void => {
-                        const tempMath5 = Math.floor(Math.random() * cards.wild.length);
-                        if (cards.wild[tempMath5].inPlay >= cards.wild[tempMath5].count) return wildCard();
-                        cardHand.push(<Card>cards.wild[tempMath5]);
-                        cards.wild[tempMath5].inPlay += 1;
-                    }
                     wildCard();
                 break;
             }
             counter++
         } while (counter < amount)
-    
+        this.gameCards.set(message.channel.id, cards);
         return cardHand;
     }
+
+    private outOfCards(cardType: Card[]): boolean {
+        for (const card of cardType) {
+            if (card.inPlay < card.count) return false;
+        }
+        return true;
+    }
+
     private nextTurn(player: number, type: "skip" | "normal", settings: Settings, storage: GameData): number {
         switch (type) {
             case "normal":
