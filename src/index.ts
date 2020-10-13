@@ -809,7 +809,7 @@ export class DiscordUNO {
             let color: "green" | "red" | "blue" | "yellow";
             const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`);
     
-            const filter = (reaction: MessageReaction, user: User) => ["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && user.id === message.author.id;
+            const filter = (reaction: MessageReaction, u: User) => ["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && u.id === message.author.id;
             await Promise.all([msg.react("🔴"), msg.react("🟢"), msg.react("🔵"), msg.react("🟡"), ])
 
             
@@ -850,7 +850,7 @@ export class DiscordUNO {
                 let msg = await message.channel.send("", ChallEmbed);
                 await Promise.all([msg.react("✅"), msg.react("❌")]);
 
-                const f = (reaction: MessageReaction, user: User) => ["✅", "❌"].includes(reaction.emoji.name) && user.id === user.id;
+                const f = (reaction: MessageReaction, u: User) => ["✅", "❌"].includes(reaction.emoji.name) && u.id === user.id;
 
                 let collected2 = await msg.awaitReactions(f, { max: 1, time: 30000 });
                 if (collected2.size > 0) {
