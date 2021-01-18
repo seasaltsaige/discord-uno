@@ -11,33 +11,37 @@ import axios from "axios";
 const NPMPackage = require("./package.json");
 
 export class DiscordUNO {
-    constructor(
-        public embedColor?: ColorResolvable,
-        private storage = new Collection<Snowflake, GameData>(), 
-        private gameCards = new Collection<Snowflake, typeof gameCardsArray>(),
-        private settings = new Collection<Snowflake, Settings>(),
-        private winners = new Collection<Snowflake, Winners[]>(),
-        public version = {
-            current: NPMPackage.version,
-            updates: async function(message?: Message) {
-                const repsonse = await axios.get("https://registry.npmjs.org/discord-uno");
-                const data = repsonse.data;
-                const latest = data["dist-tags"].latest.split(".");
-                const curr = NPMPackage.version.split(".");
-                let update = false;
-                if (parseInt(latest[0]) > parseInt(curr[0])) update = true;
-                else if (parseInt(latest[1]) > parseInt(curr[1])) update = true;
-                else if (parseInt(latest[2]) > parseInt(curr[2])) update = true;
-                if (message) {
-                    if (update) return message.channel.send("There is an update availiable! Consider checking it out!");
-                    else return message.channel.send("You are up to date!");
-                } else {
-                    if (update) return "There is an update availiable for discord-uno! Consider checking it out!"
-                }
+
+    storage = new Collection<Snowflake, GameData>()
+    gameCards = new Collection<Snowflake, typeof gameCardsArray>()
+    settings = new Collection<Snowflake, Settings>()
+    winners = new Collection<Snowflake, Winners[]>()
+
+    public version = {
+        current: NPMPackage.version,
+        updates: async function (message?: Message) {
+            const repsonse = await axios.get("https://registry.npmjs.org/discord-uno");
+            const data = repsonse.data;
+            const latest = data["dist-tags"].latest.split(".");
+            const curr = NPMPackage.version.split(".");
+            let update = false;
+            if (parseInt(latest[0]) > parseInt(curr[0])) update = true;
+            else if (parseInt(latest[1]) > parseInt(curr[1])) update = true;
+            else if (parseInt(latest[2]) > parseInt(curr[2])) update = true;
+            if (message) {
+                if (update) return message.channel.send("There is an update availiable! Consider checking it out!");
+                else return message.channel.send("You are up to date!");
+            } else {
+                if (update) return "There is an update availiable for discord-uno! Consider checking it out!"
             }
         }
+    }
+
+
+    constructor(
+        public embedColor?: ColorResolvable,
     ) { if (!this.embedColor) this.embedColor = "#FF0000" };
-    
+
 
     /**
      * To create a new UNO game, call the createGame() method. This method accepts one parameter, which is the Message object. This allows discord-uno to send and handle messages on its own. This method will return a message letting users know that they can now join the game. (Games are based off of channel ID).
@@ -85,7 +89,7 @@ export class DiscordUNO {
      * To add a user to the current game, call the addUser() method. This method accepts one parameter, which is the Message object. This method handles adding users to the game in the current channel. This will automatically start the game if the user count reaches ten.
      */
     public async addUser(message: Message): Promise<Message> {
-        
+
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game in this channel. Instead you can create a new game!");
 
@@ -98,11 +102,11 @@ export class DiscordUNO {
             hand: this.createCards(message, 7, false),
             safe: false,
         });
-        
+
         if (foundGame.users.length === 10) {
             foundGame.active = true;
             this.storage.set(message.channel.id, foundGame);
-    
+
             const BadUsers = [];
 
             for (const user of foundGame.users) {
@@ -136,7 +140,7 @@ export class DiscordUNO {
             return message.channel.send("", { embed: Embed });
         }
         this.storage.set(message.channel.id, foundGame);
-            
+
         return message.channel.send(`${message.author} joined ${message.channel}'s UNO! game!`);
     }
     /**
@@ -145,7 +149,7 @@ export class DiscordUNO {
     public async removeUser(message: Message): Promise<Message | void> {
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("There is no game to leave from, try creating one instead!");
-        
+
         if (!foundGame.users.some(data => data.id === message.author.id)) return message.channel.send("You can't leave a game that you haven't joined.");
         if (foundGame.creator === message.author.id) return message.channel.send("You can't leave your own game. Try ending the game instead.");
 
@@ -177,7 +181,7 @@ export class DiscordUNO {
         if (!foundGame.active) return message.channel.send("This game hasn't started yet, you can't do that in a game that hasn't started yet!");
         if (!foundGame.users.find(u => u.id === message.author.id)) return message.channel.send("You can't view your hand in a game you haven't joined.");
         const userHand = foundGame.users.find(user => user.id === message.author.id).hand;
-        
+
 
         if (!foundGame.users.find(u => u.id === message.author.id).DM) {
             const user = foundGame.users.find(u => u.id === message.author.id);
@@ -285,7 +289,7 @@ export class DiscordUNO {
 
         if (!cardObject && settings.jumpIns) return message.channel.send("You don't have that card in your hand!");
         else if (!cardObject && !settings.jumpIns) return message.channel.send("It isn't your turn yet!");
-        
+
         let jumpedIn = false;
         if (settings.jumpIns) {
             if (cardObject.name === foundGame.topCard.name && foundGame.users[foundGame.currentPlayer].id !== message.author.id) {
@@ -390,10 +394,10 @@ export class DiscordUNO {
 
         const TopCard = await Canvas.loadImage(foundGame.topCard.image);
         ctx.drawImage(TopCard, canvas.width / 2 + 35, canvas.height / 2 - TopCard.height / 5, 120.75, 175);
-    
-    
+
+
         const bcard = await Canvas.loadImage("./node_modules/discord-uno/src/data/assets/cards/table/deck/Deck.png");
-    
+
         let x1 = (canvas.width / 2) - (120.75 + 28)
         let y1 = ((canvas.height / 2) - (TopCard.height / 5)) + 2
         for (let i = 0; i < 3; i++) {
@@ -448,60 +452,62 @@ export class DiscordUNO {
                 case 0:
                     x = x + 150;
                     y = y - 300
-                break;
+                    break;
                 case 1:
                     x = x + 350
                     y = y - 30
-                break;
+                    break;
                 case 2:
                     x = x + 370
                     y = y;
-                break;
+                    break;
                 case 3:
                     x = x + 350
                     y = y + 30
-                break;
+                    break;
                 case 4:
                     x = x + 120
                     y = y + 300
-                break;
+                    break;
                 case 5:
                     x = x - 120
                     y = y + 300
-                break;
+                    break;
                 case 6:
                     x = x - 350
                     y = y + 30
-                break;
+                    break;
                 case 7:
                     x = x - 370
                     y = y;
-                break;
+                    break;
                 case 8:
                     x = x - 350
                     y = y - 30
-                break;
+                    break;
             }
             counter++;
         }
 
-        
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `70px manropebold`;
-            ctx.textAlign = "left";
-            const width = ctx.measureText("Rotation: ").width;
-            ctx.fillText("Rotation: ", canvas.width - 200 - width - 30, canvas.height - 50);
-            const IMAGE = await Canvas.loadImage(settings.reverse ? './node_modules/discord-uno/src/data/assets/rotation/counter_clock-wise.png' : './node_modules/discord-uno/src/data/assets/rotation/clock-wise.png');
-            ctx.drawImage(IMAGE, canvas.width - 200, canvas.height - 120, 100, 87.36);
 
-            ctx.fillText(`Turn: `, 120, canvas.height - 50);
-            ctx.fillStyle = '#ffffff';
-            const WIDTH = ctx.measureText('Turn: ').width
-            ctx.fillText(`${message.guild.members.cache.get(foundGame.users[foundGame.currentPlayer].id).user.username}`, WIDTH + 105 + 10, canvas.height - 50)
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `70px manropebold`;
+        ctx.textAlign = "left";
+        const width = ctx.measureText("Rotation: ").width;
+        ctx.fillText("Rotation: ", canvas.width - 200 - width - 30, canvas.height - 50);
+        const IMAGE = await Canvas.loadImage(settings.reverse ? './node_modules/discord-uno/src/data/assets/rotation/counter_clock-wise.png' : './node_modules/discord-uno/src/data/assets/rotation/clock-wise.png');
+        ctx.drawImage(IMAGE, canvas.width - 200, canvas.height - 120, 100, 87.36);
 
-        return message.channel.send("Current Game State", { files: [
-            new MessageAttachment(canvas.toBuffer("image/png")),
-        ] });
+        ctx.fillText(`Turn: `, 120, canvas.height - 50);
+        ctx.fillStyle = '#ffffff';
+        const WIDTH = ctx.measureText('Turn: ').width
+        ctx.fillText(`${message.guild.members.cache.get(foundGame.users[foundGame.currentPlayer].id).user.username}`, WIDTH + 105 + 10, canvas.height - 50)
+
+        return message.channel.send("Current Game State", {
+            files: [
+                new MessageAttachment(canvas.toBuffer("image/png")),
+            ]
+        });
     }
     /**
      * To end the game in its current state, call the endGame() method. This method accepts one parameter, which is the message object. This method will end the game in whatever the current state is. It will determine the winners based off of how many cards users have left in there hand, then it will return a message with the winners.
@@ -528,10 +534,12 @@ export class DiscordUNO {
         this.storage.delete(message.channel.id);
         this.gameCards.delete(message.channel.id);
         this.winners.delete(message.channel.id);
-        
-        return message.channel.send(`The game has been ended by ${message.author}! Scores have been calculated.`, { files: [
-            new MessageAttachment(winnersImage),
-        ] });
+
+        return message.channel.send(`The game has been ended by ${message.author}! Scores have been calculated.`, {
+            files: [
+                new MessageAttachment(winnersImage),
+            ]
+        });
     }
 
     /**
@@ -601,9 +609,11 @@ export class DiscordUNO {
 
         const standings = await this.displayWinners(message, foundWinners);
 
-        return message.channel.send("Here are the current UNO! Game standings!", { files: [
-            new MessageAttachment(standings),
-        ] });
+        return message.channel.send("Here are the current UNO! Game standings!", {
+            files: [
+                new MessageAttachment(standings),
+            ]
+        });
     }
 
     /**
@@ -614,7 +624,7 @@ export class DiscordUNO {
         if (!foundGame) return message.channel.send("There is no game to end in this channel.");
 
         if (foundGame.creator !== message.author.id) return message.channel.send("You can't close this game!");
-        
+
         this.storage.delete(message.channel.id);
         this.gameCards.delete(message.channel.id);
         this.winners.delete(message.channel.id);
@@ -625,7 +635,7 @@ export class DiscordUNO {
      * To add a card to your hand, call the draw() method. This method accepts one parameter, which is the message object. This method will handle adding cards to the users hand. Players can't draw if it isn't their turn and if they have a card they can play, they can't draw.
      */
     public draw(message: Message): Promise<Message> {
-        
+
         const foundGame = this.storage.get(message.channel.id);
         if (!foundGame) return message.channel.send("You can't draw cards from a game that doesn't exist! Try making one instead!");
         if (!foundGame.users.some(user => user.id === message.author.id)) return message.channel.send("You can't draw cards in this game! You aren't part of it!");
@@ -634,7 +644,7 @@ export class DiscordUNO {
 
         const beforeCondition = foundGame.users[foundGame.currentPlayer].hand.find(c => c.color === foundGame.topCard.color)
             || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === foundGame.topCard.value)
-                || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === "null");
+            || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === "null");
 
         if (beforeCondition) return message.channel.send("You already have a card in your hand that you can play! Try playing that instead.");
 
@@ -649,7 +659,7 @@ export class DiscordUNO {
 
         const condition = foundGame.users[foundGame.currentPlayer].hand.find(c => c.color === foundGame.topCard.color)
             || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === foundGame.topCard.value)
-                || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === "null");
+            || foundGame.users[foundGame.currentPlayer].hand.find(c => c.value === "null");
 
         const DrawEmbed = new MessageEmbed()
             .setColor(this.embedColor)
@@ -717,16 +727,16 @@ export class DiscordUNO {
             switch (reaction.emoji.name) {
                 case "1️⃣":
                     jumpIns = !jumpIns;
-                break;
+                    break;
                 case "2️⃣":
                     seven = !seven;
-                break;
+                    break;
                 case "3️⃣":
                     wildChallenge = !wildChallenge;
-                break;
+                    break;
                 case "4️⃣":
                     zero = !zero;
-                break;
+                    break;
                 case "✅":
                     this.settings.set(message.channel.id, {
                         jumpIns,
@@ -738,11 +748,11 @@ export class DiscordUNO {
                     });
                     react.edit(`Successfully updated UNO! settings for **${(<TextChannel>message.channel).name}**`, { embed: null });
                     react.reactions.removeAll().catch(err => "");
-                return collector.stop();
+                    return collector.stop();
                 case "❌":
                     react.edit("Cancelled.", { embed: null });
                     react.reactions.removeAll().catch(err => "");
-                return collector.stop("Cancelled");
+                    return collector.stop("Cancelled");
             }
 
             Embed.setDescription(`1️⃣ - **Jump Ins:** ${jumpIns ? "On" : "Off"}\n2️⃣ - **Seven Swap:** ${seven ? "On" : "Off"}\n3️⃣ - **Wild Challenging:** ${wildChallenge ? "On" : "Off"}\n4️⃣ - **Zero Rotation:** ${zero ? "On" : "Off"}\n\n✅ - Confirm\n❌ - Cancel`)
@@ -810,11 +820,11 @@ export class DiscordUNO {
             special = true;
             let color: "green" | "red" | "blue" | "yellow";
             const msg = await message.channel.send(`${message.author}, which color would you like to switch to? \🔴, \🟢, \🔵, or \🟡. You have 30 seconds to respond.`);
-    
-            const filter = (reaction: MessageReaction, u: User) => ["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && u.id === message.author.id;
-            await Promise.all([msg.react("🔴"), msg.react("🟢"), msg.react("🔵"), msg.react("🟡"), ])
 
-            
+            const filter = (reaction: MessageReaction, u: User) => ["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && u.id === message.author.id;
+            await Promise.all([msg.react("🔴"), msg.react("🟢"), msg.react("🔵"), msg.react("🟡"),])
+
+
             const collected = await msg.awaitReactions(filter, { max: 1, time: 30000 });
             const reaction = collected.first();
             if (reaction !== undefined) {
@@ -860,12 +870,12 @@ export class DiscordUNO {
                     switch (reaction2.emoji.name) {
                         case "✅":
                             challenge = true;
-                        break;
+                            break;
                         case "❌":
                             challenge = false;
-                        break;
+                            break;
                         default: challenge = false;
-                        break;
+                            break;
                     }
                 }
 
@@ -884,7 +894,7 @@ export class DiscordUNO {
                         });
 
                         Embed.setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-                        .setDescription(`You've been caught! You drew 6 cards.\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - ")}`);
+                            .setDescription(`You've been caught! You drew 6 cards.\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - ")}`);
 
                         authorMsg.edit("", { embed: Embed });
                         authorMsg.channel.send("Attention.").then(m => m.delete());
@@ -901,7 +911,7 @@ export class DiscordUNO {
                         });
 
                         Embed.setAuthor(challenger.username, challenger.displayAvatarURL({ format: "png" }))
-                        .setDescription(`Looks like you lost the challenge! You drew 6 cards.\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - ")}`)
+                            .setDescription(`Looks like you lost the challenge! You drew 6 cards.\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" - ")}`)
 
                         nextUserMsg.edit("", { embed: Embed });
                         nextUserMsg.channel.send("Attention.").then(m => m.delete());
@@ -919,7 +929,7 @@ export class DiscordUNO {
                     const userToSend = message.client.users.cache.get(data.users[nextUser].id);
 
                     Embed.setAuthor(userToSend.username, userToSend.displayAvatarURL({ format: "png" }))
-                    .setDescription(`Looks like you decided not to challenge. You drew 4 cards.\n\n${data.users[nextUser].hand.map(c => c.name).join(" - ")}`)
+                        .setDescription(`Looks like you decided not to challenge. You drew 4 cards.\n\n${data.users[nextUser].hand.map(c => c.name).join(" - ")}`)
 
                     nextUserMsg.edit("", { embed: Embed });
                     nextUserMsg.channel.send(`${userToSend}`).then(m => m.delete());
@@ -935,11 +945,11 @@ export class DiscordUNO {
                 newCards.forEach(c => {
                     data.users[nextUser].hand.push(c);
                 });
-    
+
                 const userToSend = message.client.users.cache.get(data.users[nextUser].id);
 
                 Embed.setAuthor(userToSend.username, userToSend.displayAvatarURL({ format: "png" }))
-                .setDescription(`Looks like you decided not to challenge. You drew 4 cards.\n\n${data.users[nextUser].hand.map(c => c.name).join(" - ")}`)
+                    .setDescription(`Looks like you decided not to challenge. You drew 4 cards.\n\n${data.users[nextUser].hand.map(c => c.name).join(" - ")}`)
 
                 nextUserMsg.edit("", { embed: Embed });
                 nextUserMsg.channel.send(`${userToSend}`).then(m => m.delete());
@@ -963,15 +973,15 @@ export class DiscordUNO {
                 .setColor(this.embedColor)
                 .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
             const msg = await message.channel.send("", { embed: EmMsg });
-    
+
             const filter = (reaction: MessageReaction, user: User) => {
                 if (user.bot) return;
                 if (user.id !== message.author.id) return;
                 return (["🔴", "🟢", "🔵", "🟡"].includes(reaction.emoji.name) && user.id === message.author.id);
             };
-    
-            await Promise.all([msg.react("🟢"), msg.react("🔴"), msg.react("🔵"), msg.react("🟡"), ])
-    
+
+            await Promise.all([msg.react("🟢"), msg.react("🔴"), msg.react("🔵"), msg.react("🟡"),])
+
             let collected = await msg.awaitReactions(filter, { max: 1, time: 30000 })
             const reaction = collected.first();
             if (reaction !== undefined) {
@@ -985,17 +995,17 @@ export class DiscordUNO {
                     color = 'yellow'
                 }
             }
-    
+
             const colors = { 1: "green", 2: "red", 3: "blue", 4: "yellow" };
             if (!color) {
                 const math = <1 | 2 | 3 | 4>(Math.floor(Math.random() * 4) + 1);
                 color = <"green" | "red" | "blue" | "yellow">(colors[math]);
-            } 
+            }
 
             data.topCard.color = color;
 
             Embed.setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-            .setDescription(`You played a Wild and changed the color to ${color}.\n\n${data.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
+                .setDescription(`You played a Wild and changed the color to ${color}.\n\n${data.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
 
             authorMsg.edit("", { embed: Embed });
             authorMsg.channel.send("Attention.").then(m => m.delete());
@@ -1016,7 +1026,7 @@ export class DiscordUNO {
             authorMsg.channel.send("Attention.").then(m => m.delete());
 
             Embed.setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-            .setDescription(`You played a ${card.name}. You now have ${data.users.find(u => u.id === message.author.id).hand.length} cards.\n\n${data.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
+                .setDescription(`You played a ${card.name}. You now have ${data.users.find(u => u.id === message.author.id).hand.length} cards.\n\n${data.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`)
 
             authorMsg.edit("", { embed: Embed });
 
@@ -1025,13 +1035,13 @@ export class DiscordUNO {
                 .setAuthor(message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, type, settings, data)].id).username, message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, type, settings, data)].id).displayAvatarURL({ format: "png" }))
                 .setColor(this.embedColor);
             message.channel.send("", { embed: MsgEmbed });
-            
+
         } else if (card.name.toLowerCase().includes("skip")) { // Done
             type = "skip";
             special = true;
             authorMsg.channel.send("Attention.").then(m => m.delete());
             Embed.setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }))
-            .setDescription(`You played a ${card.name}. You now have ${data.users.find(u => u.id === message.author.id).hand.length} cards.\n\n${data.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`);
+                .setDescription(`You played a ${card.name}. You now have ${data.users.find(u => u.id === message.author.id).hand.length} cards.\n\n${data.users.find(u => u.id === message.author.id).hand.map(c => c.name).join(" | ")}`);
 
             authorMsg.edit("", { embed: Embed });
 
@@ -1100,15 +1110,15 @@ export class DiscordUNO {
 
                 const players = data.users.length;
                 let reactions: Array<string>;
-                const playerEmojis = { 
-                    "2": ['1️⃣'], 
-                    "3": ['1️⃣', '2️⃣'], 
-                    "4": ['1️⃣', '2️⃣', '3️⃣'], 
-                    "5": ['1️⃣', '2️⃣', '3️⃣', '4️⃣'], 
-                    "6": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'], 
-                    "7": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'], 
-                    "8": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'], 
-                    "9": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'], 
+                const playerEmojis = {
+                    "2": ['1️⃣'],
+                    "3": ['1️⃣', '2️⃣'],
+                    "4": ['1️⃣', '2️⃣', '3️⃣'],
+                    "5": ['1️⃣', '2️⃣', '3️⃣', '4️⃣'],
+                    "6": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'],
+                    "7": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣'],
+                    "8": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣'],
+                    "9": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣'],
                     "10": ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']
                 };
 
@@ -1122,7 +1132,7 @@ export class DiscordUNO {
                 const dataToChooseFrom = data.users.filter(user => user.id !== message.author.id);
 
 
-                const numbers = {  "0": "1️⃣", "1": "2️⃣", "2": "3️⃣", "3": "4️⃣", "4": "5️⃣", "5": "6️⃣", "6": "7️⃣", "7": "8️⃣", "8": "9️⃣" }
+                const numbers = { "0": "1️⃣", "1": "2️⃣", "2": "3️⃣", "3": "4️⃣", "4": "5️⃣", "5": "6️⃣", "6": "7️⃣", "7": "8️⃣", "8": "9️⃣" }
                 //@ts-ignore
                 const desciption = dataToChooseFrom.map(user => `${numbers[(dataToChooseFrom.findIndex(u => u.id === user.id) + 1).toString()]} - ${message.guild.members.cache.get(user.id).user.tag} has ${user.hand.length} cards`).join("\n");
                 const EmbedMsg = new MessageEmbed()
@@ -1164,7 +1174,7 @@ export class DiscordUNO {
                 data.users.find(u => u.id === toSwapToId).hand = authorHand;
 
                 Embed.setDescription(`You swapped hands with ${user}! You now have ${data.users.find(u => u.id === author.id).hand.length} cards!\n\n${data.users.find(u => u.id === author.id).hand.map(c => c.name).join(" | ")}`)
-                .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
+                    .setAuthor(message.author.username, message.author.displayAvatarURL({ format: "png" }));
 
                 authorMsg.edit("", Embed);
                 authorChannel.send("Attention.").then(m => m.delete());
@@ -1173,13 +1183,13 @@ export class DiscordUNO {
                 const userMsg = userChannel.messages.cache.get(data.users.find(u => u.id === user.id).DM.messageId);
 
                 Embed.setDescription(`${author} swapped hands with you! You now have ${data.users.find(u => u.id === user.id).hand.length} cards!\n\n${data.users.find(u => u.id === user.id).hand.map(c => c.name).join(" | ")}`)
-                .setAuthor(user.username, user.displayAvatarURL({ format: "png" }));
+                    .setAuthor(user.username, user.displayAvatarURL({ format: "png" }));
 
                 userChannel.send("Attention.").then(m => m.delete());
                 userMsg.edit("", { embed: Embed });
 
                 EmbedMsg.setDescription(`${message.author} swapped hands with ${user}! It is now ${message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id)}'s turn!`)
-                .setAuthor(message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).username, message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).displayAvatarURL({ format: "png" }));
+                    .setAuthor(message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).username, message.client.users.cache.get(data.users[this.nextTurn(data.currentPlayer, "normal", settings, data)].id).displayAvatarURL({ format: "png" }));
                 msg.edit("", { embed: EmbedMsg }).then(m => m.reactions.removeAll());
             }
         } else if (card.name.toLowerCase().includes("draw two")) { // Done
@@ -1214,7 +1224,7 @@ export class DiscordUNO {
         return special;
     }
 
-    private returnCards (message: Message, cards: Card[]): void {
+    private returnCards(message: Message, cards: Card[]): void {
         const gameCards = this.gameCards.get(message.channel.id);
         for (const card of cards) {
             let userdCard;
@@ -1222,23 +1232,23 @@ export class DiscordUNO {
                 case "red":
                     userdCard = gameCards.red.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
-                break;
+                    break;
                 case "yellow":
                     userdCard = gameCards.yellow.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
-                break;
+                    break;
                 case "blue":
                     userdCard = gameCards.blue.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
-                break;
+                    break;
                 case "green":
                     userdCard = gameCards.green.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
-                break;
+                    break;
                 case null:
                     userdCard = gameCards.wild.find(c => c.name === card.name);
                     userdCard.inPlay -= 1;
-                break;
+                    break;
             }
         }
     }
@@ -1259,22 +1269,22 @@ export class DiscordUNO {
 
             const outOfCards = this.outOfCards;
 
-            const notYellow = [ redCard, greenCard, blueCard, wildCard ];
+            const notYellow = [redCard, greenCard, blueCard, wildCard];
             const randomNotYellow = notYellow[Math.floor(Math.random() * notYellow.length)];
 
-            const notRed = [ yellowCard, greenCard, blueCard, wildCard ];
+            const notRed = [yellowCard, greenCard, blueCard, wildCard];
             const randomNotRed = notRed[Math.floor(Math.random() * notRed.length)];
 
-            const notGreen = [ yellowCard, redCard, blueCard, wildCard ];
+            const notGreen = [yellowCard, redCard, blueCard, wildCard];
             const randomNotGreen = notGreen[Math.floor(Math.random() * notGreen.length)];
 
-            const notBlue = [ yellowCard, redCard, greenCard, wildCard ];
+            const notBlue = [yellowCard, redCard, greenCard, wildCard];
             const randomNotBlue = notBlue[Math.floor(Math.random() * notBlue.length)];
 
-            const notWild = [ yellowCard, redCard, greenCard, blueCard ];
+            const notWild = [yellowCard, redCard, greenCard, blueCard];
             const randomNotWild = notWild[Math.floor(Math.random() * notWild.length)];
 
-            function yellowCard (): void {
+            function yellowCard(): void {
                 const tempMath = Math.floor(Math.random() * cards.yellow.length);
                 if (outOfCards(cards.yellow)) return randomNotYellow();
                 if (cards.yellow[tempMath].inPlay >= cards.yellow[tempMath].count) return yellowCard();
@@ -1282,7 +1292,7 @@ export class DiscordUNO {
                 cards.yellow[tempMath].inPlay += 1;
             }
 
-            function redCard (): void {
+            function redCard(): void {
                 const tempMath2 = Math.floor(Math.random() * cards.red.length);
                 if (outOfCards(cards.red)) return randomNotRed();
                 if (cards.red[tempMath2].inPlay >= cards.red[tempMath2].count) return redCard();
@@ -1290,7 +1300,7 @@ export class DiscordUNO {
                 cards.red[tempMath2].inPlay += 1;
             }
 
-            function greenCard (): void {
+            function greenCard(): void {
                 const tempMath3 = Math.floor(Math.random() * cards.green.length);
                 if (outOfCards(cards.green)) return randomNotGreen();
                 if (cards.green[tempMath3].inPlay >= cards.green[tempMath3].count) return greenCard();
@@ -1298,7 +1308,7 @@ export class DiscordUNO {
                 cards.green[tempMath3].inPlay += 1;
             }
 
-            function blueCard (): void {
+            function blueCard(): void {
                 const tempMath4 = Math.floor(Math.random() * cards.blue.length);
                 if (outOfCards(cards.blue)) return randomNotBlue();
                 if (cards.blue[tempMath4].inPlay >= cards.blue[tempMath4].count) return blueCard();
@@ -1306,7 +1316,7 @@ export class DiscordUNO {
                 cards.blue[tempMath4].inPlay += 1;
             }
 
-            function wildCard (): void {
+            function wildCard(): void {
                 const tempMath5 = Math.floor(Math.random() * cards.wild.length);
                 if (outOfCards(cards.wild)) return randomNotWild();
                 if (cards.wild[tempMath5].inPlay >= cards.wild[tempMath5].count) return wildCard();
@@ -1317,19 +1327,19 @@ export class DiscordUNO {
             switch (math) {
                 case 1:
                     yellowCard();
-                break;
+                    break;
                 case 2:
                     redCard();
-                break;
+                    break;
                 case 3:
                     greenCard();
-                break;
+                    break;
                 case 4:
                     blueCard();
-                break;
+                    break;
                 case 5:
                     wildCard();
-                break;
+                    break;
             }
             counter++
         } while (counter < amount)
@@ -1347,9 +1357,16 @@ export class DiscordUNO {
     private nextTurn(player: number, type: "skip" | "normal", settings: Settings, storage: GameData): number {
         switch (type) {
             case "normal":
+
+                if (settings.reverse) {
+                    if (player - 1 < 0) return storage.users.length - 1;
+                    else return player - 1;
+                } else if (player + 1 >= storage.users.length) return 0;
+                else return player + 1;
+
                 return (settings.reverse ? player - 1 < 0 ? storage.users.length - 1 : player - 1 : player + 1 >= storage.users.length ? 0 : player + 1);
             case "skip":
-                return (storage.users.length == 2 ? player : settings.reverse ? (player - 2) < 0 ? storage.users.length - 2 : player - 2 : (player + 2) > storage.users.length - 1 ? 0 : (player + 2) > storage.users.length ? 1 : player + 2); 
+                return (storage.users.length == 2 ? player : settings.reverse ? (player - 2) < 0 ? storage.users.length - 2 : player - 2 : (player + 2) > storage.users.length - 1 ? 0 : (player + 2) > storage.users.length ? 1 : player + 2);
         };
     }
     private async displayWinners(message: Message, foundWinners: Winners[]): Promise<Buffer> {
@@ -1378,46 +1395,46 @@ export class DiscordUNO {
             const avatar = await Canvas.loadImage(avatarURL);
 
             ctx.save();
-        switch (i) {
-            case 0:
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2 - 100, 50, 0, 2 * Math.PI, true);
-                ctx.stroke();
-                ctx.clip();
-                ctx.drawImage(avatar, canvas.width / 2 - 50, canvas.height / 2 - 150, 100, 100);
-                ctx.closePath();
-            break;
-            case 1:
-                ctx.beginPath();
-                ctx.arc((355 / 2) + 20, canvas.height / 2 - 50, 50, 0, 2 * Math.PI, true);
-                ctx.stroke();
-                ctx.clip();
-                ctx.drawImage(avatar, (355 / 2) + 20 - 50, canvas.height / 2 - 100, 100, 100)
-                ctx.closePath();
-            break;
-            case 2:
-                ctx.beginPath();
-                ctx.arc((canvas.width / 2) + (355 / 2) - 20, canvas.height / 2 - 35, 50, 0, 2 * Math.PI, true);
-                ctx.stroke();
-                ctx.clip();
-                ctx.drawImage(avatar, (canvas.width / 2) + (355 / 2) - 20 - 50, canvas.height / 2 - 35 - 50, 100, 100);
-                ctx.closePath();
-            break;
-            default:
-                const placement = i === 3 ? '4th' : i === 4 ? '5th' : i === 5 ? '6th' : i === 6 ? '7th' : i === 7 ? '8th' : i === 8 ? '9th' : '10th'
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.textAlign = 'center';
-                ctx.fillText(placement, x1, canvas.height - 70 - 25);
-                ctx.arc(x1, canvas.height - 60, 25, 0, Math.PI * 2, true);
-                ctx.stroke();
-                ctx.clip();
-                ctx.drawImage(avatar, x1 - 25, canvas.height - 60 - 25, 50, 50);
-                ctx.closePath();
-                x1 += 80;
-            break;
-        }
-        ctx.restore();
+            switch (i) {
+                case 0:
+                    ctx.beginPath();
+                    ctx.arc(canvas.width / 2, canvas.height / 2 - 100, 50, 0, 2 * Math.PI, true);
+                    ctx.stroke();
+                    ctx.clip();
+                    ctx.drawImage(avatar, canvas.width / 2 - 50, canvas.height / 2 - 150, 100, 100);
+                    ctx.closePath();
+                    break;
+                case 1:
+                    ctx.beginPath();
+                    ctx.arc((355 / 2) + 20, canvas.height / 2 - 50, 50, 0, 2 * Math.PI, true);
+                    ctx.stroke();
+                    ctx.clip();
+                    ctx.drawImage(avatar, (355 / 2) + 20 - 50, canvas.height / 2 - 100, 100, 100)
+                    ctx.closePath();
+                    break;
+                case 2:
+                    ctx.beginPath();
+                    ctx.arc((canvas.width / 2) + (355 / 2) - 20, canvas.height / 2 - 35, 50, 0, 2 * Math.PI, true);
+                    ctx.stroke();
+                    ctx.clip();
+                    ctx.drawImage(avatar, (canvas.width / 2) + (355 / 2) - 20 - 50, canvas.height / 2 - 35 - 50, 100, 100);
+                    ctx.closePath();
+                    break;
+                default:
+                    const placement = i === 3 ? '4th' : i === 4 ? '5th' : i === 5 ? '6th' : i === 6 ? '7th' : i === 7 ? '8th' : i === 8 ? '9th' : '10th'
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.textAlign = 'center';
+                    ctx.fillText(placement, x1, canvas.height - 70 - 25);
+                    ctx.arc(x1, canvas.height - 60, 25, 0, Math.PI * 2, true);
+                    ctx.stroke();
+                    ctx.clip();
+                    ctx.drawImage(avatar, x1 - 25, canvas.height - 60 - 25, 50, 50);
+                    ctx.closePath();
+                    x1 += 80;
+                    break;
+            }
+            ctx.restore();
 
         }
         return canvas.toBuffer("image/png");
